@@ -1,97 +1,26 @@
 package com.gstech.AssistantAi.service;
 
-import dev.langchain4j.agent.tool.P;
+import com.gstech.AssistantAi.model.Budget;
+import com.gstech.AssistantAi.model.enums.Buffet;
 import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class BudgeToolService {
 
 
-    @Tool("Quando o cliente solicitar um orçamento, utilize esta função para listar os serviços disponíveis")
-    public List<String> listServices() {
+    @Tool("Essa função so deverá ser chamada se todos os dados ja tiverem sido passado. Orçamento para um evento, considerando o número de convidados e o tipo de buffet escolhido")
+    public double calculateBudget(Buffet buffet, int adults, int childrenUnder6, int childrenUnder12) {
 
-        return List.of(
-                "1 - Casamento ",
-                "2 - Festa de aniversário ",
-                "3 - Evento corporativo "
-        );
-    }
+        var budget = new Budget(adults, childrenUnder12, childrenUnder6);
+        double totalPrice = 0.0;
 
-    @Tool("Opções oferecidas no buffet de tradicional")
-    public String buffetTraditional() {
+        if (buffet == Buffet.CHURRASCOTIPO1) {
 
-        return """
-                🍛 Pratos Principais:
-              
-                Estrogonofe de frango
-                Filé de frango grelhado
-                Carne assada
-                Lasanha à bolonhesa
-                Feijoada
-       
-                Acompanhamentos:
-               
-                Arroz branco
-                Arroz temperado
-                Feijão
-                Purê de batata
-                Salada
-               
-               """;
-
-    }
-
-    @Tool("Opções oferecidas no buffet de churrasco")
-    public String buffetBarbecue() {
-
-        return """
-                
-                Picanha
-                Contra-filé
-                Fraldinha
-                Linguiça toscana
-                Coração de frango
-                Frango (coxinha da asa, sobre-coxa)
-                Costela de porco
-                Carne de porco (lombo, pernil)
-                
-                Acompanhamentos:
-           
-                Arroz branco
-                Farofa
-                Vinagrete
-                Maionese
-                Pão de alho
-                Salada verdura
-                
-                """;
-    }
-
-    @Tool ("Opções de bebidas")
-    public String drinks() {
-
-        return """
-                
-                Bebidas:
-                
-                Refrigerante
-                Água
-                Suco
-                Cerveja
-                """;
-    }
-
-    @Tool("""
-    Calcula o orçamento do evento com base no número de convidados.
-    Use esta função somente quando o cliente informar claramente a quantidade de convidados.
-    """)
-    public double budgetCalculator(
-            @P("Numero de convidados") int numberOfGuests
-    ) {
-        double valorPorPessoa = 75;
-        return numberOfGuests * valorPorPessoa;
+            double pricePerGuest = 49.90;
+            double meatKg = budget.calculateMeatKg();
+            totalPrice = meatKg * pricePerGuest;
+        }
+        return totalPrice;
     }
 }
