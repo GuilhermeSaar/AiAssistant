@@ -1,12 +1,7 @@
 package com.gstech.AssistantAi.service;
 
-import com.gstech.AssistantAi.model.Meat;
-import com.gstech.AssistantAi.model.enums.Buffet;
-import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class MenuToolService {
@@ -36,33 +31,54 @@ public class MenuToolService {
 
     }
 
-    @Tool("Opções oferecidas no buffet de churrasco")
-    public String bbqBuffetMenu() {
+    @Tool("Opção Premium oferecida no buffet de churrasco")
+    public String bbqBuffetPremium() {
 
         return """
-                Bovinos:
-                Picanha
-                Contra-filé
-                Fraldinha
-                
-                Suínos:
-                Costela de porco
-                Carne de porco (lombo, pernil)
-                Linguiça toscana
-                
-                Aves:
-                Coração de frango
-                Frango (coxinha da asa, sobre-coxa)
-                
-                Acompanhamentos:
-           
-                Arroz branco
-                Farofa
-                Vinagrete
-                Maionese
-                Pão de alho
-                Salada verdura
-                
-                """;
+            Bovinos Nobres:
+            Picanha Angus
+            Ancho
+            Chorizo
+            
+            Suínos:
+            Costela suína
+            
+            Aves:
+            Medalhão de frango com bacon
+            
+            Entradas:
+            Queijo coalho
+            Pão de alho especial
+            
+            Acompanhamentos:
+            Arroz branco
+            Arroz biro-biro
+            Farofa especial
+            Salada verde
+            """;
+    }
+
+    @Tool("Opção Essencial oferecida no buffet de churrasco")
+    public String bbqBuffetEssencial() {
+
+        return """
+            Bovinos:
+            Picanha
+            Contra-filé
+            
+            Suínos:
+            Linguiça toscana
+            
+            Aves:
+            Coração de frango
+            Coxa e sobrecoxa
+            
+            Acompanhamentos:
+            Arroz branco
+            Farofa
+            Vinagrete
+            Maionese
+            Pão de alho
+            """;
     }
 }
