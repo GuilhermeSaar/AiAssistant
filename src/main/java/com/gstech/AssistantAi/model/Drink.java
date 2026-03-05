@@ -1,9 +1,12 @@
 package com.gstech.AssistantAi.model;
 
+import com.gstech.AssistantAi.model.enums.NameDrink;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Entity
 @Getter
@@ -17,9 +20,14 @@ public class Drink {
     private Long id;
 
     @Column(name = "nome")
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private NameDrink nameDrink;
     @Column(name = "preco")
-    private Double price;
+    private BigDecimal price;
     @Column(name = "descricao")
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private CategoryDrink category;
 }

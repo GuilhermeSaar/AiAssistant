@@ -6,6 +6,34 @@ import org.springframework.stereotype.Component;
 @Component
 public class MenuToolService {
 
+    @Tool("Cardápio de bebidas")
+    public String menuDrinks() {
+
+        return """
+          
+                🍹 Bebidas:
+                
+                Refrigerantes (2L):
+                Coca-Cola
+                Guaraná
+                Fanta
+                
+                Sucos naturais (1L):
+                Laranja
+                Abacaxi
+                Maracujá
+                
+                Água mineral (500 ML):
+                com e sem gás
+                
+                Cervejas (600 ML):
+                Skol
+                Brahma
+                Heineken
+                
+                """;
+
+    }
 
     @Tool("Opções oferecidas no buffet de tradicional")
     public String traditionalBuffetMenu() {
