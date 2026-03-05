@@ -14,10 +14,6 @@ import java.time.Duration;
 @Configuration
 public class ConfigChatModel {
 
-//    @Value("${google-ai-gemini.chat-model.api-key}")
-//    private String apiKey;
-//    @Value("${google-ai-gemini.chat-model.model-name}")
-//    private String modelName;
 
     @Value("${ollama-ai.chat-model.base.url}")
     private String baseUrl;
@@ -36,6 +32,12 @@ public class ConfigChatModel {
 
     }
 
+//    @Value("${google-ai-gemini.chat-model.api-key}")
+//    private String apiKey;
+//    @Value("${google-ai-gemini.chat-model.model-name}")
+//    private String modelName;
+//
+//
 //    @Bean
 //    public GoogleAiGeminiChatModel getGeminiModel() {
 //
