@@ -1,10 +1,12 @@
 package com.gstech.AssistantAi.configLLM;
 
+import dev.langchain4j.memory.ChatMemory;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
+import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +32,11 @@ public class ConfigChatModel {
                 .apiKey("")
                 .build();
 
+    }
+
+    @Bean
+    public InMemoryChatMemoryStore chatMemory() {
+        return new InMemoryChatMemoryStore();
     }
 
 //    @Value("${google-ai-gemini.chat-model.api-key}")

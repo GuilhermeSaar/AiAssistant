@@ -7,12 +7,17 @@ import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 
 @Service
 public class BudgeToolService {
 
     private final BudgetCalculator calculateBudge;
+
+    private BigDecimal beerTotal = BigDecimal.ZERO;
+    private BigDecimal juiceTotal = BigDecimal.ZERO;
+    private BigDecimal buffetTotal = BigDecimal.ZERO;
 
     public BudgeToolService(BudgetCalculator calculateBudge) {
         this.calculateBudge = calculateBudge;
@@ -45,11 +50,11 @@ public class BudgeToolService {
             sumGuests = adults + totalChildrenUnder6 + totalChildrenUnder12;
             int sumTotalGuests = (int) Math.ceil(sumGuests);
 
-
-            return calculateBudge.calculateBuffetSelection(buffetType, (int) sumTotalGuests, eventDurationHours)
+            this.buffetTotal = calculateBudge.calculateBuffetSelection(buffetType, (int) sumTotalGuests, eventDurationHours)
                     .multiply(BigDecimal.valueOf(operationalCost));
-    }
 
+            return buffetTotal;
+    }
 
     // orcamento de cervejas
     @Tool("Esse metodo deverá ser chamado se o cliente solicitar cerveja no Orçamento! Orçamento de cervejas com sugestão automática baseada nos convidados ou quantidade informada pelo cliente")
@@ -73,6 +78,8 @@ public class BudgeToolService {
             sumTotal = sumTotal.add(calculateBudge.calculateBeerSelection(adults, includeBrahma, includeHeineken, includeSkol, quantityBrahma600ml
             , quantityHeineken600ml, quantitySkol600ml));
         }
+        this.beerTotal = sumTotal;
+
         return sumTotal;
     }
 
@@ -95,8 +102,18 @@ public class BudgeToolService {
         if (includeJuice) {
             sumTotal = sumTotal.add(calculateBudge.calculateJuiceSelection(adults, children, includeLaranja, includeMaracuja, includeAbacaxi, quantityLaranja, quantityMaracuja, quantityAbacaxi));
         }
-        return sumTotal;
+        this.juiceTotal = sumTotal;
+
+        return juiceTotal;
     }
 
-}
+    @Tool ("Metodo para calcular o valor total do orçamento")
+    public String sumTotalBudget() {
 
+        BigDecimal totalGeral = beerTotal.add(juiceTotal).add(buffetTotal)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        return String.format("Resumo do Orçamento: Buffet (R$ %.2f), Cervejas (R$ %.2f), Sucos (R$ %.2f). Valor Total Final: R$ %.2f",
+                buffetTotal, beerTotal, juiceTotal, totalGeral);
+    }
+}
