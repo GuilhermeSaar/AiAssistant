@@ -1,13 +1,10 @@
 package com.gstech.AssistantAi.configLLM.interfaces;
 
-import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
-import dev.langchain4j.service.UserMessage;
-import dev.langchain4j.service.memory.ChatMemoryAccess;
 import dev.langchain4j.service.spring.AiService;
 
 @AiService
-public interface AiAssistantService extends ChatMemoryAccess {
+public interface AiAssistantService {
 
     @SystemMessage("""
     Você é um assistente virtual especializado em atendimento ao cliente para uma empresa de serviços de eventos.
@@ -32,5 +29,5 @@ public interface AiAssistantService extends ChatMemoryAccess {
     Nunca invente informações que não estejam disponíveis.
     Seu foco é garantir uma experiência positiva, clara e confiável para o cliente.
     """)
-    String message(@MemoryId String memoryId, @UserMessage String message);
+    String message(String message);
 }

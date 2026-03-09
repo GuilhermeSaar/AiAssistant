@@ -1,7 +1,6 @@
 package com.gstech.AssistantAi.service;
 
 import com.gstech.AssistantAi.model.enums.Buffet;
-import com.gstech.AssistantAi.service.utils.BudgetCalculator;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Service;
@@ -13,18 +12,15 @@ import java.math.RoundingMode;
 @Service
 public class BudgeToolService {
 
-    private final BudgetCalculator calculateBudge;
+    private final BudgetService service;
 
-    private BigDecimal beerTotal = BigDecimal.ZERO;
-    private BigDecimal juiceTotal = BigDecimal.ZERO;
-    private BigDecimal buffetTotal = BigDecimal.ZERO;
-
-    public BudgeToolService(BudgetCalculator calculateBudge) {
-        this.calculateBudge = calculateBudge;
+    public BudgeToolService(BudgetService service) {
+        this.service = service;
     }
 
+    // orçamento de buffet
     @Tool("Essa função so deverá ser chamada se todos os dados ja tiverem sido passado. Orçamento para um evento, considerando o número de convidados e o tipo de buffet escolhido")
-    public BigDecimal calculateBudgetBuffetBBQAndTraditional(
+    public BigDecimal budgetBuffet(
             @P("Tipo de buffet escolhido") Buffet buffetType,
             @P("quantidade de adultos") int adults,
             @P("Crianças menores que 6 anos ?") boolean includeChildrenUnder6,
@@ -34,31 +30,14 @@ public class BudgeToolService {
             @P("Duração do evento em horas") int eventDurationHours
             ) {
 
-            double sumGuests;
-            double operationalCost = 1.15;
-            double totalChildrenUnder6 = 0;
-            double totalChildrenUnder12 = 0;
 
-            if (includeChildrenUnder6) {
-                totalChildrenUnder6 = childrenUnder6 * 0.25;
-            }
-
-            if (includeChildrenUnder12) {
-                totalChildrenUnder12 = childrenUnder12 * 0.50;
-            }
-
-            sumGuests = adults + totalChildrenUnder6 + totalChildrenUnder12;
-            int sumTotalGuests = (int) Math.ceil(sumGuests);
-
-            this.buffetTotal = calculateBudge.calculateBuffetSelection(buffetType, (int) sumTotalGuests, eventDurationHours)
-                    .multiply(BigDecimal.valueOf(operationalCost));
-
-            return buffetTotal;
+            return service.calculateBuffet(buffetType, adults, includeChildrenUnder6, includeChildrenUnder12,
+                    childrenUnder6, childrenUnder12, eventDurationHours);
     }
 
     // orcamento de cervejas
     @Tool("Esse metodo deverá ser chamado se o cliente solicitar cerveja no Orçamento! Orçamento de cervejas com sugestão automática baseada nos convidados ou quantidade informada pelo cliente")
-    public BigDecimal calculateBudgetBeer(
+    public BigDecimal budgetBeer(
 
             @P("Quantidade de adultos") int adults,
 
@@ -72,15 +51,8 @@ public class BudgeToolService {
 
     ) {
 
-        BigDecimal sumTotal = BigDecimal.ZERO;
-
-        if (includeBeer) {
-            sumTotal = sumTotal.add(calculateBudge.calculateBeerSelection(adults, includeBrahma, includeHeineken, includeSkol, quantityBrahma600ml
-            , quantityHeineken600ml, quantitySkol600ml));
-        }
-        this.beerTotal = sumTotal;
-
-        return sumTotal;
+        return service.calculateBeer(adults, includeBeer, includeBrahma, includeHeineken, includeSkol, quantityBrahma600ml
+                , quantityHeineken600ml, quantitySkol600ml);
     }
 
     // orçamento de sucos
@@ -97,23 +69,23 @@ public class BudgeToolService {
             @P("Quantidade suco de abacaxi?") int quantityAbacaxi
     ) {
 
-        BigDecimal sumTotal = BigDecimal.ZERO;
-
-        if (includeJuice) {
-            sumTotal = sumTotal.add(calculateBudge.calculateJuiceSelection(adults, children, includeLaranja, includeMaracuja, includeAbacaxi, quantityLaranja, quantityMaracuja, quantityAbacaxi));
-        }
-        this.juiceTotal = sumTotal;
-
-        return juiceTotal;
+        return service.calculateJuice(adults, children, includeJuice, includeLaranja, includeMaracuja,
+                includeAbacaxi, quantityLaranja, quantityMaracuja, quantityAbacaxi);
     }
 
-    @Tool ("Metodo para calcular o valor total do orçamento")
-    public String sumTotalBudget() {
+    @Tool ("Use este metodo apenas após calcular buffet, cervejas e sucos.\n" +
+            "Ele soma todos os valores e retorna o orçamento final do evento.")
+    public String sumTotalBudget(
+            @P("Valor total do buffet") BigDecimal totalBuffet,
+            @P("Valor total das cervejas") BigDecimal totalBeer,
+            @P("Valor total dos sucos") BigDecimal totalJuice
+    ) {
 
-        BigDecimal totalGeral = beerTotal.add(juiceTotal).add(buffetTotal)
-                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalCost = service.calcTotalBudget(totalBuffet, totalBeer, totalJuice);
 
-        return String.format("Resumo do Orçamento: Buffet (R$ %.2f), Cervejas (R$ %.2f), Sucos (R$ %.2f). Valor Total Final: R$ %.2f",
-                buffetTotal, beerTotal, juiceTotal, totalGeral);
+        return String.format(
+                "Resumo do Orçamento: Buffet (R$ %.2f), Cervejas (R$ %.2f), Sucos (R$ %.2f). Valor Total: R$ %.2f",
+                totalBuffet,totalBeer, totalJuice, totalCost
+        );
     }
 }

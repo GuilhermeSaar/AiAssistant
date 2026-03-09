@@ -1,12 +1,13 @@
 package com.gstech.AssistantAi.controllers;
 
 import com.gstech.AssistantAi.configLLM.interfaces.AiAssistantService;
-import com.gstech.AssistantAi.dto.ResponseDTO;
+import com.gstech.AssistantAi.dto.RequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
@@ -16,15 +17,9 @@ public class LLModelController {
     private AiAssistantService assistant;
 
     @PostMapping("/chat")
-    public ResponseEntity<ResponseDTO> getResponse(@RequestBody ResponseDTO message) {
+    public ResponseEntity<RequestDTO> getResponse(@RequestBody RequestDTO message) {
 
-        String memoryId = message.uuid();
-
-        if (memoryId == null || memoryId.isEmpty()) {
-            memoryId = UUID.randomUUID().toString();
-        }
-
-        String response = assistant.message(memoryId, message.message());
-        return ResponseEntity.ok(new ResponseDTO(response, memoryId));
+        String response = assistant.message(message.message());
+        return ResponseEntity.ok(new RequestDTO(response));
     }
 }

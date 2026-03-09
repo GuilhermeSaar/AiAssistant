@@ -1,10 +1,13 @@
 package com.gstech.AssistantAi.configLLM;
 
 import dev.langchain4j.memory.ChatMemory;
+import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.memory.chat.TokenWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.model.openai.OpenAiTokenCountEstimator;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
 import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +35,13 @@ public class ConfigChatModel {
                 .apiKey("")
                 .build();
 
+    }
+
+    @Bean
+    public ChatMemoryProvider chatMemoryProvider() {
+        return memoryId -> TokenWindowChatMemory.builder()
+                .maxTokens(2000, new OpenAiTokenCountEstimator("gpt-3.5-turbo"))
+                .build();
     }
 
     @Bean
