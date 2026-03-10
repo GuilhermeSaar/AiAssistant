@@ -28,7 +28,7 @@ public class BudgetCalculator {
     }
 
     // calculo suco
-    public  BigDecimal calculateJuice(int adults, int children, int qtdJuice, NameDrink nameJuice) {
+    public BigDecimal calculateJuice(int adults, int children, int qtdJuice, NameDrink nameJuice) {
 
         BigDecimal total = BigDecimal.ZERO;
         BigDecimal pricePerLiter = repository.findPriceByNameDrink(nameJuice);
@@ -36,11 +36,10 @@ public class BudgetCalculator {
         if (qtdJuice > 0) {
             total = total.add(
                     BigDecimal.valueOf(qtdJuice)
-                            .multiply(pricePerLiter)
-            );
-        }  else {
+                            .multiply(pricePerLiter));
+        } else {
 
-            double qtdLiters = (adults * 0.6) + (children * 0.8);
+            double qtdLiters = (adults * 0.6) + (children * 0.4);
             int unitsLiters = (int) Math.ceil(qtdLiters);
             total = total.add(
                     BigDecimal.valueOf(unitsLiters)
@@ -71,49 +70,59 @@ public class BudgetCalculator {
         return totalCost.setScale(2, RoundingMode.HALF_UP);
     }
 
-    // selecao de sucos e refrigerantes escolhidas pelo cliente
-    public BigDecimal calculateJuiceSelection(int adults, int children, boolean laranja, boolean maracuja, boolean abacaxi,
-                                               int qtdLaranja,
-                                               int qtdMaracuja, int qtdAbacaxi) {
+    // selecao de sucos escolhidas pelo cliente
+    public BigDecimal calculateJuiceSelection(int adults, int children,
+            int qtdLaranja,
+            int qtdMaracuja, int qtdAbacaxi) {
         BigDecimal sumTotal = BigDecimal.ZERO;
 
-        if (laranja) {
+        if (qtdLaranja > 0) {
             sumTotal = sumTotal.add(calculateJuice(adults, children, qtdLaranja, NameDrink.LARANJA));
         }
 
-        if (maracuja) {
+        if (qtdMaracuja > 0) {
             sumTotal = sumTotal.add(calculateJuice(adults, children, qtdMaracuja, NameDrink.MARACUJA));
         }
 
-        if (abacaxi) {
+        if (qtdAbacaxi > 0) {
             sumTotal = sumTotal.add(calculateJuice(adults, children, qtdAbacaxi, NameDrink.ABACAXI));
         }
         return sumTotal;
     }
 
-
     // selecao de cervejas escolhidas pelo cliente
-    public BigDecimal calculateBeerSelection(int adults, boolean brahma, boolean heineken, boolean skol, int qtdBrahma600ml,
-                                              int qtdHeineken600ml, int qtdSkol600ml) {
+    public BigDecimal calculateBeerSelection(int adults, boolean brahma, boolean heineken, boolean skol,
+            int qtdBrahma600ml,
+            int qtdHeineken600ml, int qtdSkol600ml) {
         BigDecimal sumTotal = BigDecimal.ZERO;
+        int selectedTypes = 0;
+
+        if (brahma)
+            selectedTypes++;
+        if (heineken)
+            selectedTypes++;
+        if (skol)
+            selectedTypes++;
+
+        if (selectedTypes == 0)
+            return sumTotal;
 
         if (brahma) {
-            sumTotal = sumTotal.add(calculateBeer(adults, qtdBrahma600ml, NameDrink.BRAHMA));
+            sumTotal = sumTotal.add(calculateBeer(adults, qtdBrahma600ml, NameDrink.BRAHMA, selectedTypes));
         }
 
         if (heineken) {
-            sumTotal = sumTotal.add(calculateBeer(adults, qtdHeineken600ml, NameDrink.HEINEKEN));
+            sumTotal = sumTotal.add(calculateBeer(adults, qtdHeineken600ml, NameDrink.HEINEKEN, selectedTypes));
         }
 
         if (skol) {
-            sumTotal = sumTotal.add(calculateBeer(adults, qtdSkol600ml, NameDrink.SKOL));
+            sumTotal = sumTotal.add(calculateBeer(adults, qtdSkol600ml, NameDrink.SKOL, selectedTypes));
         }
         return sumTotal;
     }
 
-
     // calculo cerveja
-    public BigDecimal calculateBeer(int adults, int qtdBeer600ml, NameDrink nameDrink) {
+    public BigDecimal calculateBeer(int adults, int qtdBeer600ml, NameDrink nameDrink, int selectedTypes) {
 
         BigDecimal total = BigDecimal.ZERO;
         BigDecimal pricePerUnit = repository.findPriceByNameDrink(nameDrink);
@@ -121,12 +130,11 @@ public class BudgetCalculator {
         if (qtdBeer600ml > 0) {
             total = total.add(
                     BigDecimal.valueOf(qtdBeer600ml)
-                            .multiply(pricePerUnit)
-            );
+                            .multiply(pricePerUnit));
 
         } else {
             double liters = adults * 1.50;
-            int units600ml = (int) Math.ceil(liters / 0.6);
+            int units600ml = (int) Math.ceil((liters / 0.6) / selectedTypes);
             total = total.add(
                     BigDecimal.valueOf(units600ml)
                             .multiply(pricePerUnit));

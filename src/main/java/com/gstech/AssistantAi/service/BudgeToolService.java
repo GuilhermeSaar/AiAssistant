@@ -6,7 +6,6 @@ import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 
 @Service
@@ -19,48 +18,82 @@ public class BudgeToolService {
     }
 
     // orçamento de buffet
-    @Tool("Essa função so deverá ser chamada se todos os dados ja tiverem sido passado. Orçamento para um evento, considerando o número de convidados e o tipo de buffet escolhido")
+    @Tool("""
+        Calcula o custo do buffet do evento.
+    
+        Use esta ferramenta quando o cliente informar:
+        - tipo de buffet
+        - quantidade de adultos
+        - quantidade de crianças
+        - duração do evento
+    
+        Retorna o valor total do buffet.
+    """)
     public BigDecimal budgetBuffet(
             @P("Tipo de buffet escolhido") Buffet buffetType,
             @P("quantidade de adultos") int adults,
-            @P("Crianças menores que 6 anos ?") boolean includeChildrenUnder6,
             @P("Crianças menores que 12 anos ?") boolean includeChildrenUnder12,
-            @P("quantidade de crianças menores de 6 anos") int childrenUnder6,
             @P("quantidade de crianças menores de 12 anos") int childrenUnder12,
             @P("Duração do evento em horas") int eventDurationHours
             ) {
 
+            System.out.printf("CALCULANDO BUFFET... %.2f", service.calculateBuffet(buffetType, adults, includeChildrenUnder12,
+                        childrenUnder12, eventDurationHours));
 
-            return service.calculateBuffet(buffetType, adults, includeChildrenUnder6, includeChildrenUnder12,
-                    childrenUnder6, childrenUnder12, eventDurationHours);
+
+            return service.calculateBuffet(buffetType, adults, includeChildrenUnder12,
+                    childrenUnder12, eventDurationHours);
     }
 
     // orcamento de cervejas
-    @Tool("Esse metodo deverá ser chamado se o cliente solicitar cerveja no Orçamento! Orçamento de cervejas com sugestão automática baseada nos convidados ou quantidade informada pelo cliente")
+    @Tool("""
+            Calcula o custo de cervejas para o evento.
+            
+            Use esta ferramenta quando o cliente solicitar cerveja no orçamento.
+            
+            Importante:
+            - todas as cervejas são consideradas garrafas de 600ml.
+            
+            Regras:
+            - Utilize as quantidades informadas pelo cliente se existirem.
+            - Caso o cliente não informe quantidades, o sistema deve sugerir uma quantidade automática baseada no número de adultos.
+            - Retorna apenas o valor total das cervejas.
+            """)
     public BigDecimal budgetBeer(
 
             @P("Quantidade de adultos") int adults,
 
-            @P("Deseja cerveja?") boolean includeBeer,
             @P("Deseja brahma") boolean includeBrahma,
             @P("Deseja skol") boolean includeSkol,
             @P("Deseja heineken") boolean includeHeineken,
-            @P("Quantidade Brahma?") int quantityBrahma600ml,
-            @P("Quantidade Heineken?") int quantityHeineken600ml,
-            @P("Quantidade Skol?") int quantitySkol600ml
+            @P("Quantidade de garrafas de 600ml Brahma") int quantityBrahma600ml,
+            @P("Quantidade de garrafas de 600ml Heineken") int quantityHeineken600ml,
+            @P("Quantidade de garrafas de 600ml Skol") int quantitySkol600ml
 
     ) {
 
-        return service.calculateBeer(adults, includeBeer, includeBrahma, includeHeineken, includeSkol, quantityBrahma600ml
+        System.out.printf("CALCULANDO CERVEJA... %.2f", service.calculateBeer(adults, true, includeBrahma, includeHeineken, includeSkol, quantityBrahma600ml
+                , quantityHeineken600ml, quantitySkol600ml));
+
+        return service.calculateBeer(adults, true, includeBrahma, includeHeineken, includeSkol, quantityBrahma600ml
                 , quantityHeineken600ml, quantitySkol600ml);
     }
 
     // orçamento de sucos
-    @Tool("Esse metodo deverá ser chamado se o cliente solicitar sucos no orçamento. Orçamento de sucos com sugestão automática baseada nos convidados ou quantidade informada pelo cliente")
-    public BigDecimal calculateBudgetJuice(
+    @Tool("""
+        Calcula o custo dos sucos do evento.
+    
+        Use quando o cliente solicitar sucos no orçamento.
+    
+        O cliente pode:
+        - informar quantidades específicas
+        - ou solicitar a quantidade sugerida baseada nos convidados
+    
+        Retorna o valor total dos sucos.
+    """)
+    public BigDecimal budgetJuice(
             @P("Quantidade de adultos") int adults,
             @P("Quantidade de crianças") int children,
-            @P("Deseja suco?") boolean includeJuice,
             @P("Deseja suco de laranja?") boolean includeLaranja,
             @P("Deseja suco de maracujá?") boolean includeMaracuja,
             @P("Deseja suco de abacaxi?") boolean includeAbacaxi,
@@ -69,23 +102,27 @@ public class BudgeToolService {
             @P("Quantidade suco de abacaxi?") int quantityAbacaxi
     ) {
 
-        return service.calculateJuice(adults, children, includeJuice, includeLaranja, includeMaracuja,
-                includeAbacaxi, quantityLaranja, quantityMaracuja, quantityAbacaxi);
+        System.out.printf("CALCULANDO SUCOS... %.2f", service.calculateJuice(adults, children, true,
+                quantityLaranja, quantityMaracuja, quantityAbacaxi));
+
+        return service.calculateJuice(adults, children, true, quantityLaranja, quantityMaracuja, quantityAbacaxi);
     }
 
-    @Tool ("Use este metodo apenas após calcular buffet, cervejas e sucos.\n" +
-            "Ele soma todos os valores e retorna o orçamento final do evento.")
-    public String sumTotalBudget(
+    @Tool("""
+        Soma todos os valores do orçamento do evento.
+    
+        Use apenas depois que buffet, cervejas e sucos forem calculados.
+    
+        Retorna o valor total do evento.
+    """)
+    public BigDecimal sumTotalBudget(
             @P("Valor total do buffet") BigDecimal totalBuffet,
             @P("Valor total das cervejas") BigDecimal totalBeer,
             @P("Valor total dos sucos") BigDecimal totalJuice
     ) {
 
-        BigDecimal totalCost = service.calcTotalBudget(totalBuffet, totalBeer, totalJuice);
+        System.out.printf("CALCULANDO TOTAL ORÇAMENTO... %.2f",service.calcTotalBudget(totalBuffet, totalBeer, totalJuice));
 
-        return String.format(
-                "Resumo do Orçamento: Buffet (R$ %.2f), Cervejas (R$ %.2f), Sucos (R$ %.2f). Valor Total: R$ %.2f",
-                totalBuffet,totalBeer, totalJuice, totalCost
-        );
+        return service.calcTotalBudget(totalBuffet, totalBeer, totalJuice);
     }
 }

@@ -24,7 +24,7 @@ public class ConfigChatModel {
     private String baseUrl;
     @Value("${ollama-ai.chat-model.model-name}")
     private String modelName;
-    private int timeout = 120;
+    private int timeout = 240;
     @Bean
     public ChatModel ollamaModel() {
 

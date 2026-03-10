@@ -2,6 +2,7 @@ package com.gstech.AssistantAi.controllers;
 
 import com.gstech.AssistantAi.configLLM.interfaces.AiAssistantService;
 import com.gstech.AssistantAi.dto.RequestDTO;
+import com.gstech.AssistantAi.dto.ResponseLLMDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +18,9 @@ public class LLModelController {
     private AiAssistantService assistant;
 
     @PostMapping("/chat")
-    public ResponseEntity<RequestDTO> getResponse(@RequestBody RequestDTO message) {
+    public ResponseEntity<ResponseLLMDTO> getResponse(@RequestBody RequestDTO message) {
 
         String response = assistant.message(message.message());
-        return ResponseEntity.ok(new RequestDTO(response));
+        return ResponseEntity.ok(new ResponseLLMDTO(response));
     }
 }

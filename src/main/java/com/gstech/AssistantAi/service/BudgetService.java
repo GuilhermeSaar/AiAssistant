@@ -17,25 +17,20 @@ public class BudgetService {
     }
 
     // calculo do  buffet
-    public BigDecimal calculateBuffet(Buffet type, int adults, boolean includeChildrenUnder6, boolean includeChildrenUnder12,
-                                      int childrenUnder6, int childrenUnder12, int eventDurationHours) {
+    public BigDecimal calculateBuffet(Buffet type, int adults, boolean includeChildrenUnder12,
+                                       int childrenUnder12, int eventDurationHours) {
 
         double sumGuests;
         double operationalCost = 1.15;
-        double totalChildrenUnder6 = 0;
         double totalChildrenUnder12 = 0;
 
-        if (includeChildrenUnder6) {
-
-            totalChildrenUnder6 = childrenUnder6 * 0.25;
-        }
 
         if (includeChildrenUnder12) {
 
             totalChildrenUnder12 = childrenUnder12 * 0.50;
         }
 
-        sumGuests = adults + totalChildrenUnder6 + totalChildrenUnder12;
+        sumGuests = adults + totalChildrenUnder12;
         int sumTotalGuests = (int) Math.ceil(sumGuests);
 
         return calculator.calculateBuffetSelection(type, (int) sumTotalGuests, eventDurationHours)
@@ -59,14 +54,14 @@ public class BudgetService {
     }
 
     // calculo de suco
-    public BigDecimal calculateJuice(int adults, int children, boolean includeJuice, boolean includeLaranja, boolean includeMaracuja,
-                                     boolean includeAbacaxi, int quantityLaranja, int quantityMaracuja, int quantityAbacaxi) {
+    public BigDecimal calculateJuice(int adults, int children, boolean includeJuice,
+                                     int quantityLaranja, int quantityMaracuja, int quantityAbacaxi) {
 
         BigDecimal totalCost = BigDecimal.ZERO;
 
         if (includeJuice) {
-            totalCost = totalCost.add(calculator.calculateJuiceSelection(adults, children, includeLaranja, includeMaracuja,
-                    includeAbacaxi, quantityLaranja, quantityMaracuja, quantityAbacaxi));
+            totalCost = totalCost.add(calculator.calculateJuiceSelection(adults, children,
+                    quantityLaranja, quantityMaracuja, quantityAbacaxi));
         }
 
         return totalCost;
