@@ -1,30 +1,29 @@
 package com.gstech.AssistantAi.service;
 
 import dev.langchain4j.agent.tool.Tool;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class MenuToolService {
+@Service
+public class MenuToolsService {
 
-    @Tool("Cardápio de bebidas")
+    @Tool("""
+            Opção de bebidas oferecidas.
+            
+            Use quando o cliente perguntar:
+            - quais opçoes de bebidas
+            - qual o cardápio das bebidas
+            - quais bebidas vocês oferecem
+            """)
     public String menuDrinks() {
 
         return """
           
                 🍹 Bebidas:
                 
-                Refrigerantes (2L):
-                Coca-Cola
-                Guaraná
-                Fanta
-                
                 Sucos naturais (1L):
                 Laranja
                 Abacaxi
                 Maracujá
-                
-                Água mineral (500 ML):
-                com e sem gás
                 
                 Cervejas (600 ML):
                 Skol
@@ -35,32 +34,16 @@ public class MenuToolService {
 
     }
 
-    @Tool("Opções oferecidas no buffet de tradicional")
-    public String traditionalBuffetMenu() {
+    @Tool("""
+            Mostra o cardápio do churrasco premium.
 
-        return """
-                🍛 Pratos Principais:
-              
-                Estrogonofe de frango
-                Filé de frango grelhado
-                Carne assada
-                Lasanha à bolonhesa
-                Feijoada
-       
-                Acompanhamentos:
-               
-                Arroz branco
-                Arroz temperado
-                Feijão
-                Purê de batata
-                Salada
-               
-               """;
-
-    }
-
-    @Tool("Opção Premium oferecida no buffet de churrasco")
-    public String bbqBuffetPremium() {
+            Use quando o cliente perguntar:
+            - o que tem no churrasco premium
+            - qual o cardápio premium
+            - quais carnes tem no premium
+            
+            """)
+    public String bbqMenuPremium() {
 
         return """
             Bovinos Nobres:
@@ -86,8 +69,15 @@ public class MenuToolService {
             """;
     }
 
-    @Tool("Opção Essencial oferecida no buffet de churrasco")
-    public String bbqBuffetEssencial() {
+    @Tool("""
+            Mostra o cardápio do churrasco essencial.
+
+            Use quando o cliente perguntar:
+            - o que tem no churrasco essencial
+            - qual o cardápio essencial
+            - quais carnes tem no essencial
+            """)
+    public String bbqMenuEssencial() {
 
         return """
             Bovinos:

@@ -24,30 +24,35 @@ public class ConfigChatModel {
     private String baseUrl;
     @Value("${ollama-ai.chat-model.model-name}")
     private String modelName;
-    private int timeout = 240;
+
     @Bean
     public ChatModel ollamaModel() {
 
         return OpenAiChatModel.builder()
                 .baseUrl(baseUrl)
                 .modelName(modelName)
-                .timeout(Duration.ofSeconds(timeout))
                 .apiKey("")
                 .build();
+    }
 
+    @Bean
+    public ChatMemory chatMemory() {
+        return MessageWindowChatMemory.builder()
+                .maxMessages(10)
+                .build();
     }
 
     @Bean
     public ChatMemoryProvider chatMemoryProvider() {
-        return memoryId -> TokenWindowChatMemory.builder()
-                .maxTokens(2000, new OpenAiTokenCountEstimator("gpt-3.5-turbo"))
-                .build();
+        return memoryId -> MessageWindowChatMemory.withMaxMessages(30);
     }
 
     @Bean
-    public InMemoryChatMemoryStore chatMemory() {
+    public ChatMemoryStore chatMemoryStore() {
         return new InMemoryChatMemoryStore();
     }
+
+
 
 //    @Value("${google-ai-gemini.chat-model.api-key}")
 //    private String apiKey;

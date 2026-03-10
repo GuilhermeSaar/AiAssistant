@@ -1,7 +1,6 @@
 package com.gstech.AssistantAi.model.enums;
 
-public enum Buffet {
+public enum BBQ {
     CHURRASCO_PREMIUM,
     CHURRASCO_ESSENCIAL,
-    TRADICIONAL
 }

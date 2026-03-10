@@ -1,6 +1,7 @@
 package com.gstech.AssistantAi.dto;
 
 public record RequestDTO(
-        String message
+        String UserMessage,
+        String id
 ) {
 }

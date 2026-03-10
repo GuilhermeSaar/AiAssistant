@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api")
 public class LLModelController {
@@ -17,10 +19,18 @@ public class LLModelController {
     @Autowired
     private AiAssistantService assistant;
 
+
     @PostMapping("/chat")
     public ResponseEntity<ResponseLLMDTO> getResponse(@RequestBody RequestDTO message) {
 
-        String response = assistant.message(message.message());
-        return ResponseEntity.ok(new ResponseLLMDTO(response));
+        String conversationId = message.id();
+
+        if (conversationId == null || conversationId.isBlank()) {
+            conversationId = UUID.randomUUID().toString();
+        }
+
+
+        String response = assistant.message(conversationId, message.UserMessage());
+        return ResponseEntity.ok(new ResponseLLMDTO(response, conversationId));
     }
 }

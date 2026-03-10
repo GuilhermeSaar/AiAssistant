@@ -1,6 +1,6 @@
 package com.gstech.AssistantAi.service.utils;
 
-import com.gstech.AssistantAi.model.enums.Buffet;
+import com.gstech.AssistantAi.model.enums.BBQ;
 import com.gstech.AssistantAi.model.enums.NameDrink;
 import com.gstech.AssistantAi.repositories.DrinkRepository;
 import org.springframework.stereotype.Component;
@@ -48,22 +48,17 @@ public class BudgetCalculator {
         return total;
     }
 
-    public BigDecimal calculateBuffetSelection(Buffet nameBuffet, int totalGuests, int eventDurationHours) {
+    public BigDecimal calculateBBQSelection(BBQ nameBuffet, int totalGuests, int eventDurationHours) {
 
         BigDecimal totalCost = BigDecimal.ZERO;
 
-        if (nameBuffet == Buffet.CHURRASCO_ESSENCIAL) {
+        if (nameBuffet == BBQ.CHURRASCO_ESSENCIAL) {
             totalCost = BigDecimal.valueOf(59.90).multiply(BigDecimal.valueOf(totalGuests))
                     .multiply(BigDecimal.valueOf(hourlyRate(eventDurationHours)));
         }
 
-        else if (nameBuffet == Buffet.CHURRASCO_PREMIUM) {
+        else if (nameBuffet == BBQ.CHURRASCO_PREMIUM) {
             totalCost = BigDecimal.valueOf(79.90).multiply(BigDecimal.valueOf(totalGuests))
-                    .multiply(BigDecimal.valueOf(hourlyRate(eventDurationHours)));
-        }
-
-        else if (nameBuffet == Buffet.TRADICIONAL) {
-            totalCost = BigDecimal.valueOf(49.90).multiply(BigDecimal.valueOf(totalGuests))
                     .multiply(BigDecimal.valueOf(hourlyRate(eventDurationHours)));
         }
 

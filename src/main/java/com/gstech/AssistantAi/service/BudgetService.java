@@ -1,6 +1,6 @@
 package com.gstech.AssistantAi.service;
 
-import com.gstech.AssistantAi.model.enums.Buffet;
+import com.gstech.AssistantAi.model.enums.BBQ;
 import com.gstech.AssistantAi.service.utils.BudgetCalculator;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +16,9 @@ public class BudgetService {
         this.calculator = calculator;
     }
 
-    // calculo do  buffet
-    public BigDecimal calculateBuffet(Buffet type, int adults, boolean includeChildrenUnder12,
-                                       int childrenUnder12, int eventDurationHours) {
+    // calculo do buffet
+    public BigDecimal calculateBuffet(BBQ type, int adults, boolean includeChildrenUnder12,
+                                      int childrenUnder12, int eventDurationHours) {
 
         double sumGuests;
         double operationalCost = 1.15;
@@ -33,7 +33,7 @@ public class BudgetService {
         sumGuests = adults + totalChildrenUnder12;
         int sumTotalGuests = (int) Math.ceil(sumGuests);
 
-        return calculator.calculateBuffetSelection(type, (int) sumTotalGuests, eventDurationHours)
+        return calculator.calculateBBQSelection(type, (int) sumTotalGuests, eventDurationHours)
                 .multiply(BigDecimal.valueOf(operationalCost));
     }
 
