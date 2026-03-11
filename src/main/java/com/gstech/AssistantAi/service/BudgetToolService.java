@@ -8,12 +8,12 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Service
-public class BudgeToolService {
+public class BudgetToolService {
 
-    private final BudgetService service;
+    private final BudgetCalculationService service;
 
 
-    public BudgeToolService(BudgetService service) {
+    public BudgetToolService(BudgetCalculationService service) {
         this.service = service;
 
     }

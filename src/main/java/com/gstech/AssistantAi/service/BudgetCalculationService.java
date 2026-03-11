@@ -8,11 +8,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 @Service
-public class BudgetService {
+public class BudgetCalculationService {
 
     private final BudgetCalculator calculator;
 
-    public BudgetService(BudgetCalculator calculator) {
+    public BudgetCalculationService(BudgetCalculator calculator) {
         this.calculator = calculator;
     }
 
