@@ -31,14 +31,10 @@ public class ConfigChatModel {
         return OpenAiChatModel.builder()
                 .baseUrl(baseUrl)
                 .modelName(modelName)
+                .maxTokens(2048)
+                .temperature(0.0)
+                .returnThinking(false)
                 .apiKey("")
-                .build();
-    }
-
-    @Bean
-    public ChatMemory chatMemory() {
-        return MessageWindowChatMemory.builder()
-                .maxMessages(10)
                 .build();
     }
 
@@ -51,8 +47,6 @@ public class ConfigChatModel {
     public ChatMemoryStore chatMemoryStore() {
         return new InMemoryChatMemoryStore();
     }
-
-
 
 //    @Value("${google-ai-gemini.chat-model.api-key}")
 //    private String apiKey;

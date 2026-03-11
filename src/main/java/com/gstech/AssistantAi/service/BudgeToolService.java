@@ -33,15 +33,14 @@ public class BudgeToolService {
     public BigDecimal budgetBBQ(
             @P("Tipo de churrasco escolhido") BBQ bbqType,
             @P("quantidade de adultos") int adults,
-            @P("Crianças menores que 12 anos ?") boolean includeChildrenUnder12,
             @P("quantidade de crianças menores de 12 anos") int childrenUnder12,
             @P("Duração do evento em horas") int eventDurationHours) {
 
         System.out.printf("CALCULANDO CHURRASCO... %.2f",
-                service.calculateBuffet(bbqType, adults, includeChildrenUnder12,
+                service.calculateBBQ(bbqType, adults,
                         childrenUnder12, eventDurationHours));
 
-        return service.calculateBuffet(bbqType, adults, includeChildrenUnder12,
+        return service.calculateBBQ(bbqType, adults,
                 childrenUnder12, eventDurationHours);
     }
 
@@ -62,20 +61,15 @@ public class BudgeToolService {
     public BigDecimal budgetBeer(
 
             @P("Quantidade de adultos") int adults,
-
-            @P("Deseja brahma") boolean includeBrahma,
-            @P("Deseja skol") boolean includeSkol,
-            @P("Deseja heineken") boolean includeHeineken,
             @P("Quantidade de garrafas de 600ml Brahma") int quantityBrahma600ml,
             @P("Quantidade de garrafas de 600ml Heineken") int quantityHeineken600ml,
             @P("Quantidade de garrafas de 600ml Skol") int quantitySkol600ml
 
     ) {
 
-        System.out.printf("CALCULANDO CERVEJA... %.2f", service.calculateBeer(adults, true, includeBrahma,
-                includeHeineken, includeSkol, quantityBrahma600ml, quantityHeineken600ml, quantitySkol600ml));
+        System.out.printf("CALCULANDO CERVEJA... %.2f", service.calculateBeer(adults, true, quantityBrahma600ml, quantityHeineken600ml, quantitySkol600ml));
 
-        return service.calculateBeer(adults, true, includeBrahma, includeHeineken, includeSkol, quantityBrahma600ml,
+        return service.calculateBeer(adults, true, quantityBrahma600ml,
                 quantityHeineken600ml, quantitySkol600ml);
     }
 

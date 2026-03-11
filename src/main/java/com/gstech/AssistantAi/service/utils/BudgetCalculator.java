@@ -86,31 +86,31 @@ public class BudgetCalculator {
     }
 
     // selecao de cervejas escolhidas pelo cliente
-    public BigDecimal calculateBeerSelection(int adults, boolean brahma, boolean heineken, boolean skol,
-            int qtdBrahma600ml,
-            int qtdHeineken600ml, int qtdSkol600ml) {
+    public BigDecimal calculateBeerSelection(int adults, int qtdBrahma600ml, int qtdHeineken600ml, int qtdSkol600ml) {
         BigDecimal sumTotal = BigDecimal.ZERO;
         int selectedTypes = 0;
 
-        if (brahma)
+        if (qtdBrahma600ml > 0)
             selectedTypes++;
-        if (heineken)
+
+        if (qtdHeineken600ml > 0)
             selectedTypes++;
-        if (skol)
+
+        if (qtdSkol600ml > 0)
             selectedTypes++;
 
         if (selectedTypes == 0)
             return sumTotal;
 
-        if (brahma) {
+        if (qtdBrahma600ml > 0) {
             sumTotal = sumTotal.add(calculateBeer(adults, qtdBrahma600ml, NameDrink.BRAHMA, selectedTypes));
         }
 
-        if (heineken) {
+        if (qtdHeineken600ml > 0) {
             sumTotal = sumTotal.add(calculateBeer(adults, qtdHeineken600ml, NameDrink.HEINEKEN, selectedTypes));
         }
 
-        if (skol) {
+        if (qtdSkol600ml > 0) {
             sumTotal = sumTotal.add(calculateBeer(adults, qtdSkol600ml, NameDrink.SKOL, selectedTypes));
         }
         return sumTotal;

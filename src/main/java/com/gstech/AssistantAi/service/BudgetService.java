@@ -17,15 +17,14 @@ public class BudgetService {
     }
 
     // calculo do buffet
-    public BigDecimal calculateBuffet(BBQ type, int adults, boolean includeChildrenUnder12,
-                                      int childrenUnder12, int eventDurationHours) {
+    public BigDecimal calculateBBQ(BBQ type, int adults, int childrenUnder12, int eventDurationHours) {
 
         double sumGuests;
         double operationalCost = 1.15;
         double totalChildrenUnder12 = 0;
 
 
-        if (includeChildrenUnder12) {
+        if (childrenUnder12 > 0) {
 
             totalChildrenUnder12 = childrenUnder12 * 0.50;
         }
@@ -39,15 +38,13 @@ public class BudgetService {
 
 
     // calculo de cerveja
-    public BigDecimal calculateBeer(int adults, boolean includeBeer, boolean includeBrahma, boolean includeHeineken, boolean includeSkol,
-                                    int quantityBrahma600ml, int quantityHeineken600ml, int quantitySkol600ml) {
+    public BigDecimal calculateBeer(int adults, boolean includeBeer, int quantityBrahma600ml, int quantityHeineken600ml, int quantitySkol600ml) {
 
 
         BigDecimal totalCost = BigDecimal.ZERO;
 
         if (includeBeer) {
-            totalCost = totalCost.add(calculator.calculateBeerSelection(adults, includeBrahma, includeHeineken, includeSkol, quantityBrahma600ml
-                    , quantityHeineken600ml, quantitySkol600ml));
+            totalCost = totalCost.add(calculator.calculateBeerSelection(adults, quantityBrahma600ml,quantityHeineken600ml, quantitySkol600ml));
         }
 
         return totalCost;
