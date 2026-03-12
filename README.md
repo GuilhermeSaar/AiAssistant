@@ -60,8 +60,7 @@ public BigDecimal budgetBBQ(BBQ bbqType, int adults, int childrenUnder12, int ev
 | `budgetJuice` | Calcula o custo de sucos naturais (Laranja, Abacaxi, Maracujá 1L) |
 | `sumTotalBudget` | Soma todos os valores e retorna o total final do orçamento |
 | `menuDrinks` | Retorna o cardápio de bebidas disponíveis |
-| `bbqMenuPremium` | Retorna o cardápio do Churrasco Premium |
-| `bbqMenuEssencial` | Retorna o cardápio do Churrasco Essencial |
+| `bbqMenu` | Retorna o cardápio completo (Premium e Essencial) da churrascaria |
 
 ---
 
@@ -74,6 +73,7 @@ public BigDecimal budgetBBQ(BBQ bbqType, int adults, int childrenUnder12, int ev
 - 💰 **Cálculo automático de orçamento** — Preços consultados em banco de dados, com regras de negócio aplicadas
 - 🧠 **Memória de conversa por sessão** — Janela de 30 mensagens via `ChatMemoryProvider`
 - 🆔 **Sessões independentes** — Cada conversa possui um `conversationId` único (UUID)
+- 🌐 **Interface Web** — Página interativa em `index.html` para conversar com o assistente em tempo real
 
 ---
 
@@ -143,7 +143,7 @@ src/main/java/com/gstech/AssistantAi/
 │   └── DrinkRepository.java            # Consulta de preços das bebidas
 │
 └── service/
-    ├── BudgeToolService.java           # @Tool — ferramentas expostas ao LLM
+    ├── BudgetToolService.java      # @Tool — ferramentas expostas ao LLM
     ├── BudgetCalculationService.java   # Lógica de cálculo de cada item do orçamento
     ├── MenuToolsService.java           # @Tool — cardápios disponíveis para o assistente
     └── utils/
@@ -252,7 +252,8 @@ ollama run qwen2.5:7b
 ./mvnw spring-boot:run
 ```
 
-A API estará disponível em: `http://localhost:8080`
+A aplicação estará disponível em: `http://localhost:8080`
+A interface de chat pode ser acessada em: `http://localhost:8080/index.html`
 
 > O banco H2 é populado automaticamente com preços de bebidas e carnes via `data.sql` na inicialização.
 

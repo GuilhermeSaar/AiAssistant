@@ -1,7 +1,8 @@
 package com.gstech.AssistantAi.service;
 
 import com.gstech.AssistantAi.model.enums.BBQ;
-import com.gstech.AssistantAi.service.utils.BudgetCalculator;
+import com.gstech.AssistantAi.model.enums.NameDrink;
+import com.gstech.AssistantAi.repositories.DrinkRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -10,10 +11,20 @@ import java.math.RoundingMode;
 @Service
 public class BudgetCalculationService {
 
-    private final BudgetCalculator calculator;
+    private final DrinkRepository repository;
 
-    public BudgetCalculationService(BudgetCalculator calculator) {
-        this.calculator = calculator;
+    public BudgetCalculationService(DrinkRepository repository) {
+        this.repository = repository;
+    }
+
+     //taxa de hora extra para eventos com duracao maior que 4 horas
+    public double hourlyRate(int eventDurationHours) {
+        int extraHours = eventDurationHours - 4;
+
+        if (extraHours <= 0) {
+            return 1.0;
+        }
+        return 1.0 + (extraHours * 0.10);
     }
 
     // calculo do buffet
@@ -22,6 +33,7 @@ public class BudgetCalculationService {
         double sumGuests;
         double operationalCost = 1.15;
         double totalChildrenUnder12 = 0;
+        BigDecimal totalCostBBQ = BigDecimal.ZERO;
 
 
         if (childrenUnder12 > 0) {
@@ -32,36 +44,66 @@ public class BudgetCalculationService {
         sumGuests = adults + totalChildrenUnder12;
         int sumTotalGuests = (int) Math.ceil(sumGuests);
 
-        return calculator.calculateBBQSelection(type, (int) sumTotalGuests, eventDurationHours)
-                .multiply(BigDecimal.valueOf(operationalCost));
+        if (BBQ.CHURRASCO_PREMIUM == type) {
+            totalCostBBQ = BigDecimal.valueOf(79.90).multiply(BigDecimal.valueOf(sumTotalGuests))
+                    .multiply(BigDecimal.valueOf(hourlyRate(eventDurationHours)));
+        }
+
+        else if (BBQ.CHURRASCO_ESSENCIAL == type) {
+            totalCostBBQ = BigDecimal.valueOf(59.90).multiply(BigDecimal.valueOf(sumTotalGuests))
+                    .multiply(BigDecimal.valueOf(hourlyRate(eventDurationHours)));
+        }
+
+        return totalCostBBQ.multiply(BigDecimal.valueOf(operationalCost)).setScale(2, RoundingMode.HALF_UP);
     }
 
 
     // calculo de cerveja
-    public BigDecimal calculateBeer(int adults, boolean includeBeer, int quantityBrahma600ml, int quantityHeineken600ml, int quantitySkol600ml) {
+    public BigDecimal calculateBeer(int quantityBrahma600ml, int quantityHeineken600ml, int quantitySkol600ml) {
 
+        BigDecimal totalCostBeer = BigDecimal.ZERO;
+        double taxBeer = 1.25;
 
-        BigDecimal totalCost = BigDecimal.ZERO;
-
-        if (includeBeer) {
-            totalCost = totalCost.add(calculator.calculateBeerSelection(adults, quantityBrahma600ml,quantityHeineken600ml, quantitySkol600ml));
+        if (quantityBrahma600ml > 0) {
+            totalCostBeer = totalCostBeer.add(BigDecimal.valueOf(quantityBrahma600ml)
+            .multiply(repository.findPriceByNameDrink(NameDrink.BRAHMA)));
         }
 
-        return totalCost;
+        if (quantityHeineken600ml > 0) {
+            totalCostBeer = totalCostBeer.add(BigDecimal.valueOf(quantityHeineken600ml)
+                    .multiply(repository.findPriceByNameDrink(NameDrink.HEINEKEN)));
+        }
+
+        if (quantitySkol600ml > 0) {
+            totalCostBeer = totalCostBeer.add(BigDecimal.valueOf(quantitySkol600ml)
+                    .multiply(repository.findPriceByNameDrink(NameDrink.SKOL)));
+        }
+
+        return totalCostBeer.multiply(BigDecimal.valueOf(taxBeer).setScale(2, RoundingMode.HALF_UP));
     }
 
     // calculo de suco
-    public BigDecimal calculateJuice(int adults, int children, boolean includeJuice,
-                                     int quantityLaranja, int quantityMaracuja, int quantityAbacaxi) {
+    public BigDecimal calculateJuice(int quantityLaranja, int quantityMaracuja, int quantityAbacaxi) {
 
         BigDecimal totalCost = BigDecimal.ZERO;
+        double taxJuice = 1.10;
 
-        if (includeJuice) {
-            totalCost = totalCost.add(calculator.calculateJuiceSelection(adults, children,
-                    quantityLaranja, quantityMaracuja, quantityAbacaxi));
+        if (quantityLaranja > 0) {
+            totalCost = totalCost.add(BigDecimal.valueOf(quantityLaranja)
+                    .multiply(repository.findPriceByNameDrink(NameDrink.LARANJA)));
         }
 
-        return totalCost;
+        if (quantityMaracuja > 0) {
+            totalCost = totalCost.add(BigDecimal.valueOf(quantityMaracuja)
+                    .multiply(repository.findPriceByNameDrink(NameDrink.MARACUJA)));
+        }
+
+        if (quantityAbacaxi > 0) {
+            totalCost = totalCost.add(BigDecimal.valueOf(quantityAbacaxi)
+                    .multiply(repository.findPriceByNameDrink(NameDrink.ABACAXI)));
+        }
+
+        return totalCost.multiply(BigDecimal.valueOf(taxJuice).setScale(2, RoundingMode.HALF_UP));
     }
 
     // calculo total

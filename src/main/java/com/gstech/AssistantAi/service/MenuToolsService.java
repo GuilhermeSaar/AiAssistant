@@ -7,46 +7,43 @@ import org.springframework.stereotype.Service;
 public class MenuToolsService {
 
     @Tool("""
-            Opção de bebidas oferecidas.
-            
-            Use quando o cliente perguntar:
-            - quais opçoes de bebidas
-            - qual o cardápio das bebidas
-            - quais bebidas vocês oferecem
+            Busca o cardápio oficial de bebidas da Brasa's Churrascaria, incluindo sucos naturais e cervejas disponíveis para os clientes.
             """)
     public String menuDrinks() {
+
+        System.out.println("Ferramenta `menuDrinks` foi chamada para fornecer o cardápio de bebidas.");
 
         return """
           
                 🍹 Bebidas:
                 
-                Sucos naturais (1L):
+                Sucos naturais (1L): 
                 Laranja
                 Abacaxi
                 Maracujá
                 
                 Cervejas (600 ML):
-                Skol
-                Brahma
-                Heineken
+                Skol               --> R$ 9,00
+                Brahma             --> R$ 9,00
+                Heineken           -- > R$ 12,00
                 
                 """;
-
     }
 
     @Tool("""
-            Mostra o cardápio do churrasco premium.
-
-            Use quando o cliente perguntar:
-            - o que tem no churrasco premium
-            - qual o cardápio premium
-            - quais carnes tem no premium
-            
+            Busca o cardápio oficial da Brasa's Churrascaria, contendo os itens detalhados dos serviços Premium e Essencial.
             """)
-    public String bbqMenuPremium() {
+    public String bbqMenu() {
+
+
+        System.out.println("Ferramenta `bbqMenu` foi chamada para fornecer o cardápio do churrasco.");
 
         return """
+            
+            ### CARDÁPIO DO CHURRASCO PREMIUM ###
+            
             Bovinos Nobres:
+            
             Picanha Angus
             Ancho
             Chorizo
@@ -66,20 +63,10 @@ public class MenuToolsService {
             Arroz biro-biro
             Farofa especial
             Salada verde
-            """;
-    }
-
-    @Tool("""
-            Mostra o cardápio do churrasco essencial.
-
-            Use quando o cliente perguntar:
-            - o que tem no churrasco essencial
-            - qual o cardápio essencial
-            - quais carnes tem no essencial
-            """)
-    public String bbqMenuEssencial() {
-
-        return """
+            
+            
+            ### CARDÁPIO DO CHURRASCO ESSENCIAL ###
+            
             Bovinos:
             Picanha
             Contra-filé
@@ -97,6 +84,7 @@ public class MenuToolsService {
             Vinagrete
             Maionese
             Pão de alho
+            
             """;
     }
 }

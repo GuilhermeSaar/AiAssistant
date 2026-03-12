@@ -12,7 +12,6 @@ public class BudgetToolService {
 
     private final BudgetCalculationService service;
 
-
     public BudgetToolService(BudgetCalculationService service) {
         this.service = service;
 
@@ -20,15 +19,7 @@ public class BudgetToolService {
 
     // orçamento do tipo de churrasco
     @Tool("""
-                Calcula o custo do churrasco para o evento.
-
-                Use esta ferramenta quando o cliente informar:
-                - tipo de churrasco escolhido (Premium, Essencial ou Tradicional)
-                - quantidade de adultos
-                - quantidade de crianças
-                - duração do evento
-
-                Retorna o valor total do churrasco.
+            Calcula o valor do churrasco. Use APENAS após ter: Tipo de churrasco, Adultos, Crianças e Duração.
             """)
     public BigDecimal budgetBBQ(
             @P("Tipo de churrasco escolhido") BBQ bbqType,
@@ -46,64 +37,38 @@ public class BudgetToolService {
 
     // orcamento de cervejas
     @Tool("""
-            Calcula o custo de cervejas para o evento.
-
-            Use esta ferramenta quando o cliente solicitar cerveja no orçamento.
-
-            Importante:
-            - todas as cervejas são consideradas garrafas de 600ml.
-
-            Regras:
-            - Utilize as quantidades informadas pelo cliente se existirem.
-            - Caso o cliente não informe quantidades, o sistema deve sugerir uma quantidade automática baseada no número de adultos.
-            - Retorna apenas o valor total das cervejas.
+            Calcula o valor das cervejas. Use APENAS após definir o churrasco e confirmar se o cliente quer cerveja.
             """)
     public BigDecimal budgetBeer(
-
-            @P("Quantidade de adultos") int adults,
             @P("Quantidade de garrafas de 600ml Brahma") int quantityBrahma600ml,
             @P("Quantidade de garrafas de 600ml Heineken") int quantityHeineken600ml,
             @P("Quantidade de garrafas de 600ml Skol") int quantitySkol600ml
 
     ) {
 
-        System.out.printf("CALCULANDO CERVEJA... %.2f", service.calculateBeer(adults, true, quantityBrahma600ml, quantityHeineken600ml, quantitySkol600ml));
+        System.out.printf("CALCULANDO CERVEJA... %.2f", service.calculateBeer(quantityBrahma600ml, quantityHeineken600ml, quantitySkol600ml));
 
-        return service.calculateBeer(adults, true, quantityBrahma600ml,
+        return service.calculateBeer(quantityBrahma600ml,
                 quantityHeineken600ml, quantitySkol600ml);
     }
 
     // orçamento de sucos
     @Tool("""
-                Calcula o custo dos sucos do evento.
-
-                Use quando o cliente solicitar sucos no orçamento.
-
-                O cliente pode:
-                - informar quantidades específicas
-                - ou solicitar a quantidade sugerida baseada nos convidados
-
-                Retorna o valor total dos sucos.
+            Calcula o valor dos sucos. Use APENAS após definir o churrasco e confirmar se o cliente quer suco.
             """)
     public BigDecimal budgetJuice(
-            @P("Quantidade de adultos") int adults,
-            @P("Quantidade de crianças") int children,
             @P("Quantidade suco de laranja?") int quantityLaranja,
             @P("Quantidade suco de maracujá?") int quantityMaracuja,
             @P("Quantidade suco de abacaxi?") int quantityAbacaxi) {
 
-        System.out.printf("CALCULANDO SUCOS... %.2f", service.calculateJuice(adults, children, true,
+        System.out.printf("CALCULANDO SUCOS... %.2f", service.calculateJuice(
                 quantityLaranja, quantityMaracuja, quantityAbacaxi));
 
-        return service.calculateJuice(adults, children, true, quantityLaranja, quantityMaracuja, quantityAbacaxi);
+        return service.calculateJuice(quantityLaranja, quantityMaracuja, quantityAbacaxi);
     }
 
     @Tool("""
-                Soma todos os valores do orçamento do evento.
-
-                Use apenas depois que o tipo de churrasco, cervejas e sucos forem calculados.
-
-                Retorna o valor total do evento.
+            Calcula o valor total do orçamento somando churrasco, cervejas e sucos. Use APENAS após ter os valores individuais de cada item.
             """)
     public BigDecimal sumTotalBudget(
             @P("Valor total do serviço") BigDecimal totalBbq,
