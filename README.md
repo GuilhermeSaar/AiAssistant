@@ -70,7 +70,6 @@ public BigDecimal budgetBBQ(BBQ bbqType, int adults, int childrenUnder12, int ev
 - 🗂️ **Qualificação de evento** — Coleta tipo de evento, número de adultos, crianças e duração
 - 🥩 **Cardápio interativo** — Apresenta os menus Premium e Essencial sob demanda
 - 🍺 **Orçamento de bebidas** — Cervejas (Brahma, Heineken, Skol 600ml) e Sucos (Laranja, Abacaxi, Maracujá 1L)
-- 💰 **Cálculo automático de orçamento** — Preços consultados em banco de dados, com regras de negócio aplicadas
 - 🧠 **Memória de conversa por sessão** — Janela de 30 mensagens via `ChatMemoryProvider`
 - 🆔 **Sessões independentes** — Cada conversa possui um `conversationId` único (UUID)
 - 🌐 **Interface Web** — Página interativa em `index.html` para conversar com o assistente em tempo real
@@ -108,47 +107,10 @@ public BigDecimal budgetBBQ(BBQ bbqType, int adults, int childrenUnder12, int ev
 | Hora extra (> 4h) | +10% por hora extra sobre o custo do churrasco |
 | Custo operacional | +15% sobre o custo do churrasco |
 | Cerveja (sem qtd informada) | 1,5L por adulto, distribuído entre as marcas escolhidas |
-| Suco (sem qtd informada) | 600ml por adulto / 400ml por criança |
 
 ---
 
-## 🏗️ Arquitetura
 
-```
-src/main/java/com/gstech/AssistantAi/
-├── AssistantAiApplication.java         # Ponto de entrada Spring Boot
-│
-├── configLLM/
-│   ├── ConfigChatModel.java            # @Bean: ChatModel, ChatMemoryProvider, ChatMemoryStore
-│   └── interfaces/
-│       └── AiAssistantService.java     # @AiService com @SystemMessage — agente principal
-│
-├── controllers/
-│   └── LLModelController.java          # Endpoint REST POST /api/chat
-│
-├── dto/
-│   ├── RequestDTO.java                 # { id, UserMessage }
-│   └── ResponseLLMDTO.java             # { response, conversationId }
-│
-├── model/
-│   ├── CategoryDrink.java
-│   ├── Drink.java
-│   ├── Meat.java
-│   └── enums/
-│       ├── BBQ.java                    # CHURRASCO_PREMIUM | CHURRASCO_ESSENCIAL
-│       ├── MeatType.java
-│       └── NameDrink.java              # BRAHMA | HEINEKEN | SKOL | LARANJA | MARACUJA | ABACAXI
-│
-├── repositories/
-│   └── DrinkRepository.java            # Consulta de preços das bebidas
-│
-└── service/
-    ├── BudgetToolService.java      # @Tool — ferramentas expostas ao LLM
-    ├── BudgetCalculationService.java   # Lógica de cálculo de cada item do orçamento
-    ├── MenuToolsService.java           # @Tool — cardápios disponíveis para o assistente
-    └── utils/
-        └── BudgetCalculator.java       # Cálculos detalhados (preços, horas extras, sugestões)
-```
 
 ---
 
@@ -196,7 +158,7 @@ O projeto suporta dois provedores:
 
 | Provedor | Status | Observação |
 |----------|--------|------------|
-| **Ollama** (qwen2.5:7b) | ✅ Ativo | Via API compatível com OpenAI — `http://localhost:11434/v1` |
+| **Ollama** (gpt-oss:20b) | ✅ Ativo | Via API compatível com OpenAI — `http://localhost:11434/v1` |
 | **Google Gemini** (gemini-2.5-flash) | 💤 Comentado | Descomente o bean em `ConfigChatModel.java` para ativar |
 
 ---
@@ -222,7 +184,7 @@ O projeto suporta dois provedores:
 
 - Java 21+
 - Maven 3.8+
-- [Ollama](https://ollama.com/) instalado localmente com o modelo `qwen2.5:7b` (ou outro de sua preferência)
+- [Ollama](https://ollama.com/) instalado localmente com o modelo `gpt-oss:20b` (ou outro de sua preferência)
 
 ### 1. Clone o repositório
 
@@ -237,13 +199,13 @@ Edite `src/main/resources/application-dev.properties`:
 
 ```properties
 ollama-ai.chat-model.base.url=http://localhost:11434/v1
-ollama-ai.chat-model.model-name=qwen2.5:7b
+ollama-ai.chat-model.model-name=gpt-oss:20b
 ```
 
 ### 3. Suba o Ollama com o modelo
 
 ```bash
-ollama run qwen2.5:7b
+ollama run gpt-oss:20b
 ```
 
 ### 4. Execute a aplicação
@@ -255,10 +217,10 @@ ollama run qwen2.5:7b
 A aplicação estará disponível em: `http://localhost:8080`
 A interface de chat pode ser acessada em: `http://localhost:8080/index.html`
 
-> O banco H2 é populado automaticamente com preços de bebidas e carnes via `data.sql` na inicialização.
+> O banco H2 é populado automaticamente com preços de bebidas via `data.sql` na inicialização.
 
 ---
 
 ## 📝 Licença
 
-Este projeto é de uso proprietário da **Brasa's Churrascaria**. Todos os direitos reservados.
+Projeto desenvolvido para fins didáticos e de demonstração. Sinta-se à vontade para explorar.

@@ -67,6 +67,7 @@ public class BudgetToolService {
         return service.calculateJuice(quantityLaranja, quantityMaracuja, quantityAbacaxi);
     }
 
+    // calculo total do orçamento.
     @Tool("""
             Calcula o valor total do orçamento somando churrasco, cervejas e sucos. Use APENAS após ter os valores individuais de cada item.
             """)

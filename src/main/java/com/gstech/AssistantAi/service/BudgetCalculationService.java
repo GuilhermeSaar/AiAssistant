@@ -27,7 +27,7 @@ public class BudgetCalculationService {
         return 1.0 + (extraHours * 0.10);
     }
 
-    // calculo do buffet
+    // calculo do churrasco
     public BigDecimal calculateBBQ(BBQ type, int adults, int childrenUnder12, int eventDurationHours) {
 
         double sumGuests;
@@ -56,7 +56,6 @@ public class BudgetCalculationService {
 
         return totalCostBBQ.multiply(BigDecimal.valueOf(operationalCost)).setScale(2, RoundingMode.HALF_UP);
     }
-
 
     // calculo de cerveja
     public BigDecimal calculateBeer(int quantityBrahma600ml, int quantityHeineken600ml, int quantitySkol600ml) {

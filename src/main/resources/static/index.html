@@ -128,6 +128,32 @@
       border-bottom-left-radius: 4px;
     }
 
+    /* ── tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 13.5px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
     /* ── typing indicator ── */
     .typing { display: flex; gap: 5px; padding: 14px 18px; }
     .typing span {
@@ -209,6 +235,7 @@
     .welcome h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
     .welcome p { color: var(--muted); font-size: 14px; line-height: 1.6; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -290,7 +317,12 @@
 
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    bubble.textContent = text;
+    
+    if (role === 'bot' && typeof marked !== 'undefined') {
+      bubble.innerHTML = marked.parse(text);
+    } else {
+      bubble.textContent = text;
+    }
 
     wrapper.appendChild(avatar);
     wrapper.appendChild(bubble);

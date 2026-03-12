@@ -19,32 +19,32 @@ import org.springframework.context.annotation.Configuration;
 public class Config {
 
 
-//    @Value("${ollama-ai.chat-model.base.url}")
-//    private String baseUrl;
-//    @Value("${ollama-ai.chat-model.model-name}")
-//    private String modelName;
+    // parametros de config do modelo LLM
+    @Value("${ollama-ai.chat-model.base.url}")
+    private String baseUrl;
+    @Value("${ollama-ai.chat-model.model-name}")
+    private String modelName;
 
-    // modelo de LLM
-//    @Bean
-//    public ChatModel ollamaModel() {
-//
-//        return OpenAiChatModel.builder()
-//                .baseUrl(baseUrl)
-//                .modelName(modelName)
-//                .maxTokens(2000)
-//                .temperature(0.0)
-//                .returnThinking(false)
-//                .apiKey("")
-//                .build();
-//    }
+     //modelo de LLM
+    @Bean
+    public ChatModel ollamaModel() {
 
-    // armazenamento de memoria volatil (RAM).
+        return OpenAiChatModel.builder()
+                .baseUrl(baseUrl)
+                .modelName(modelName)
+                .temperature(0.0)
+                .maxTokens(2000)
+                .apiKey("")
+                .build();
+    }
+
+    // armazenamento de memoria.
     @Bean
     public ChatMemoryProvider chatMemoryProvider() {
         return memoryId -> MessageWindowChatMemory.withMaxMessages(30);
     }
 
-    // Configuração do serviço de assistente virtual.
+    // Configuração do serviço
     @Bean
     public AiAssistantService assistantService(ChatMemoryProvider memory, ChatModel model,
                                                MenuToolsService menuTools, BudgetToolService budgetTools) {
@@ -58,21 +58,23 @@ public class Config {
 
 
 
-    @Value("${google-ai-gemini.chat-model.api-key}")
-    private String apiKey;
-    @Value("${google-ai-gemini.chat-model.model-name}")
-    private String modelName;
 
 
-    @Bean
-    public GoogleAiGeminiChatModel getGeminiModel() {
-
-        return GoogleAiGeminiChatModel.builder()
-                .allowGoogleSearch(false)
-                .modelName(modelName)
-                .temperature(0.0)
-                .returnThinking(false)
-                .apiKey(apiKey)
-                .build();
-    }
+//    @Value("${google-ai-gemini.chat-model.api-key}")
+//    private String apiKey;
+//    @Value("${google-ai-gemini.chat-model.model-name}")
+//    private String modelName;
+//
+//
+//    @Bean
+//    public GoogleAiGeminiChatModel getGeminiModel() {
+//
+//        return GoogleAiGeminiChatModel.builder()
+//                .allowGoogleSearch(false)
+//                .modelName(modelName)
+//                .temperature(0.0)
+//                .returnThinking(false)
+//                .apiKey(apiKey)
+//                .build();
+//    }
 }
