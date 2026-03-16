@@ -7,6 +7,7 @@ import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
@@ -14,6 +15,8 @@ import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.Duration;
 
 @Configuration
 public class Config {
@@ -29,12 +32,11 @@ public class Config {
     @Bean
     public ChatModel ollamaModel() {
 
-        return OpenAiChatModel.builder()
+        return OllamaChatModel.builder()
                 .baseUrl(baseUrl)
                 .modelName(modelName)
+                .timeout(Duration.ofSeconds(120))
                 .temperature(0.0)
-                .maxTokens(2000)
-                .apiKey("")
                 .build();
     }
 
@@ -55,9 +57,6 @@ public class Config {
                 .tools(menuTools, budgetTools)
                 .build();
     }
-
-
-
 
 
 //    @Value("${google-ai-gemini.chat-model.api-key}")

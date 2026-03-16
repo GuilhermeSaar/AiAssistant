@@ -24,7 +24,6 @@ public interface AiAssistantService extends ChatMemoryAccess {
 
     @SystemMessage("""
         Você é o assistente virtual da Brasa's Churrascaria...
-        [fluxo de atendimento, regras de negócio, tom de voz]
     """)
     String message(@MemoryId String conversationId,
                    @UserMessage String message);
@@ -42,9 +41,7 @@ As ferramentas são **métodos Java anotados com `@Tool`** que o LLM pode invoca
 
 ```java
 @Tool("""
-    Calcula o custo do churrasco para o evento.
-    Use esta ferramenta quando o cliente informar: tipo de churrasco,
-    quantidade de adultos, crianças e duração do evento.
+    Calcula o valor do churrasco. Use APENAS após ter: Tipo de churrasco, Adultos, Crianças e Duração.
 """)
 public BigDecimal budgetBBQ(BBQ bbqType, int adults, int childrenUnder12, int eventDurationHours) {
     return service.calculateBBQ(bbqType, adults, childrenUnder12, eventDurationHours);
@@ -195,10 +192,8 @@ cd AiAssistant
 
 ### 2. Configure as propriedades
 
-Edite `src/main/resources/application-dev.properties`:
-
 ```properties
-ollama-ai.chat-model.base.url=http://localhost:11434/v1
+ollama-ai.chat-model.base.url=http://localhost:11434
 ollama-ai.chat-model.model-name=gpt-oss:20b
 ```
 

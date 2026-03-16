@@ -1,17 +1,46 @@
 package com.gstech.AssistantAi.service;
 
+import com.gstech.AssistantAi.dto.DrinkMenu;
+import com.gstech.AssistantAi.dto.DrinkOption;
 import com.gstech.AssistantAi.model.enums.BBQ;
 import com.gstech.AssistantAi.model.enums.NameDrink;
 import com.gstech.AssistantAi.repositories.DrinkRepository;
+import org.hibernate.mapping.List;
 import org.springframework.stereotype.Service;
 
+import javax.naming.Name;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 
 @Service
 public class BudgetCalculationService {
 
     private final DrinkRepository repository;
+
+    public DrinkOption getBeerMenu() {
+
+        return new DrinkOption(
+                "CERVEJAS 600ML",
+                Map.of(
+                        NameDrink.SKOL, repository.findPriceByNameDrink(NameDrink.SKOL),
+                        NameDrink.BRAHMA, repository.findPriceByNameDrink(NameDrink.BRAHMA),
+                        NameDrink.HEINEKEN, repository.findPriceByNameDrink(NameDrink.HEINEKEN)
+                )
+        );
+    }
+
+    public DrinkOption getJuiceMenu() {
+
+        return new DrinkOption(
+                "SUCOS 1L",
+                Map.of(
+                        NameDrink.LARANJA, repository.findPriceByNameDrink(NameDrink.LARANJA),
+                        NameDrink.MARACUJA, repository.findPriceByNameDrink(NameDrink.MARACUJA),
+                        NameDrink.ABACAXI, repository.findPriceByNameDrink(NameDrink.ABACAXI)
+                )
+        );
+    }
 
     public BudgetCalculationService(DrinkRepository repository) {
         this.repository = repository;

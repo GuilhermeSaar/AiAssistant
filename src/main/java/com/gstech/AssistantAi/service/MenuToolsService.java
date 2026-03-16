@@ -1,58 +1,54 @@
 package com.gstech.AssistantAi.service;
 
+import com.gstech.AssistantAi.dto.BBQMenu;
+import com.gstech.AssistantAi.dto.BBQOption;
+import com.gstech.AssistantAi.dto.DrinkMenu;
+import com.gstech.AssistantAi.dto.DrinkOption;
 import dev.langchain4j.agent.tool.Tool;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class MenuToolsService {
 
+    private final BudgetCalculationService service;
+
+    public MenuToolsService(BudgetCalculationService service) {
+        this.service = service;
+    }
 
     // cardapio bebidas
     @Tool("""
             Busca o cardápio oficial de bebidas da Brasa's Churrascaria, incluindo sucos naturais e cervejas disponíveis para os clientes.
             """)
-    public String menuDrinks() {
+    public DrinkMenu menuDrinks() {
 
-        System.out.println("Ferramenta `menuDrinks` foi chamada para fornecer o cardápio de bebidas.");
-
-        return """
-                🍹 **Cardápio de Bebidas**
-                
-                - **Suco de Laranja** (1 Litro): R$ 8,00
-                - **Suco de Abacaxi** (1 Litro): R$ 8,00
-                - **Suco de Maracujá** (1 Litro): R$ 8,00
-                - **Cerveja Skol** (600 ML): R$ 9,00
-                - **Cerveja Brahma** (600 ML): R$ 9,00
-                - **Cerveja Heineken** (600 ML): R$ 12,00
-                """;
+        return new DrinkMenu(service.getBeerMenu(), service.getJuiceMenu());
     }
 
     // cardapio churrasco
     @Tool("""
             Busca o cardápio oficial da Brasa's Churrascaria, contendo os itens detalhados dos serviços Premium e Essencial.
             """)
-    public String bbqMenu() {
+    public BBQMenu bbqMenu() {
 
+        BBQOption premium = new BBQOption(
+                "CHURRASCO PREMIUM",
+                List.of("Picanha Angus", "Ancho", "Chorizo"),
+                List.of("Costela suína", "Linguiça defumada"),
+                List.of("Medalhão de frango com bacon", "Asinhas de frango"),
+                List.of("Queijo coaclho", "Pão de alho especial", "Arroz branco", "Farofa especial", "Salada verde")
+        );
 
-        System.out.println("Ferramenta `bbqMenu` foi chamada para fornecer o cardápio do churrasco.");
+        BBQOption essencial = new BBQOption(
+                "CHURRASCO ESSENCIAL",
+                List.of("Picanha", "Contra-filé"),
+                List.of("Linguiça toscana"),
+                List.of("Coração de frango", "Coxa e sobrecoxa"),
+                List.of("Arroz branco", "Farofa", "Vinagrete", "Maionese", "Pão de alho")
+        );
 
-        return """
-            ### 🥩 CHURRASCO PREMIUM
-            
-            - **Bovinos Nobres**: Picanha Angus, Ancho, Chorizo
-            - **Suínos**: Costela suína
-            - **Aves**: Medalhão de frango com bacon
-            - **Entradas**: Queijo coalho, Pão de alho especial
-            - **Acompanhamentos**: Arroz branco, Arroz biro-biro, Farofa especial, Salada verde
-            
-            ---
-            
-            ### 🍖 CHURRASCO ESSENCIAL
-            
-            - **Bovinos**: Picanha, Contra-filé
-            - **Suínos**: Linguiça toscana
-            - **Aves**: Coração de frango, Coxa e sobrecoxa
-            - **Acompanhamentos**: Arroz branco, Farofa, Vinagrete, Maionese, Pão de alho
-            """;
+        return new BBQMenu(premium, essencial);
     }
 }

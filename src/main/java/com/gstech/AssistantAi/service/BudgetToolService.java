@@ -27,10 +27,6 @@ public class BudgetToolService {
             @P("quantidade de crianças menores de 12 anos") int childrenUnder12,
             @P("Duração do evento em horas") int eventDurationHours) {
 
-        System.out.printf("CALCULANDO CHURRASCO... %.2f",
-                service.calculateBBQ(bbqType, adults,
-                        childrenUnder12, eventDurationHours));
-
         return service.calculateBBQ(bbqType, adults,
                 childrenUnder12, eventDurationHours);
     }
@@ -46,8 +42,6 @@ public class BudgetToolService {
 
     ) {
 
-        System.out.printf("CALCULANDO CERVEJA... %.2f", service.calculateBeer(quantityBrahma600ml, quantityHeineken600ml, quantitySkol600ml));
-
         return service.calculateBeer(quantityBrahma600ml,
                 quantityHeineken600ml, quantitySkol600ml);
     }
@@ -61,9 +55,6 @@ public class BudgetToolService {
             @P("Quantidade suco de maracujá?") int quantityMaracuja,
             @P("Quantidade suco de abacaxi?") int quantityAbacaxi) {
 
-        System.out.printf("CALCULANDO SUCOS... %.2f", service.calculateJuice(
-                quantityLaranja, quantityMaracuja, quantityAbacaxi));
-
         return service.calculateJuice(quantityLaranja, quantityMaracuja, quantityAbacaxi);
     }
 
@@ -75,9 +66,6 @@ public class BudgetToolService {
             @P("Valor total do serviço") BigDecimal totalBbq,
             @P("Valor total das cervejas") BigDecimal totalBeer,
             @P("Valor total dos sucos") BigDecimal totalJuice) {
-
-        System.out.printf("CALCULANDO TOTAL ORÇAMENTO... %.2f",
-                service.calcTotalBudget(totalBbq, totalBeer, totalJuice));
 
         return service.calcTotalBudget(totalBbq, totalBeer, totalJuice);
     }
