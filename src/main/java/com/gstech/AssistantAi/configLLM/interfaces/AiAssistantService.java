@@ -41,8 +41,8 @@ public interface AiAssistantService extends ChatMemoryAccess {
                    👥 Convidados: [X] adultos + [Y] crianças | ⏱ Duração: [Z]h
             
                    🥩 Churrasco [Premium/Essencial]: R$ X.XXX,XX
-                   🍺 Cervejas: R$ X.XXX,XX  (ou "Não solicitado")
-                   🍹 Sucos: R$ X.XXX,XX  (ou "Não solicitado")
+                   🍺 Cervejas: R$ X.XXX,XX  (ou "Não solicitado") Taxa adicional:25%
+                   🍹 Sucos: R$ X.XXX,XX  (ou "Não solicitado")    Taxa adicional:10%
                    ──────────────────────────
                    💰 Total: R$ X.XXX,XX
                    ```

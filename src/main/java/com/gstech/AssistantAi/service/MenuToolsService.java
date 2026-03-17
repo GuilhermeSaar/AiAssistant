@@ -33,22 +33,6 @@ public class MenuToolsService {
             """)
     public BBQMenu bbqMenu() {
 
-        BBQOption premium = new BBQOption(
-                "CHURRASCO PREMIUM",
-                List.of("Picanha Angus", "Ancho", "Chorizo"),
-                List.of("Costela suína", "Linguiça defumada"),
-                List.of("Medalhão de frango com bacon", "Asinhas de frango"),
-                List.of("Queijo coaclho", "Pão de alho especial", "Arroz branco", "Farofa especial", "Salada verde")
-        );
-
-        BBQOption essencial = new BBQOption(
-                "CHURRASCO ESSENCIAL",
-                List.of("Picanha", "Contra-filé"),
-                List.of("Linguiça toscana"),
-                List.of("Coração de frango", "Coxa e sobrecoxa"),
-                List.of("Arroz branco", "Farofa", "Vinagrete", "Maionese", "Pão de alho")
-        );
-
-        return new BBQMenu(premium, essencial);
+        return new BBQMenu(service.getBbqPremiumMenu(), service.getBbqEssencialMenu());
     }
 }
