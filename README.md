@@ -17,7 +17,7 @@ Projeto de portfólio em Java que integra a API da OpenAI a ferramentas de consu
 
 1. O cliente informa o tipo de churrasco, os convidados e a duração.
 2. O assistente consulta os cardápios e solicita as informações que faltam.
-3. Após a confirmação, as ferramentas Java calculam o churrasco e as bebidas escolhidas.
+3. Quando os dados necessários estiverem completos, as ferramentas Java calculam o churrasco e as bebidas escolhidas.
 4. O assistente apresenta os valores retornados pelas ferramentas e o total.
 
 O fluxo conversacional é orientado pelo prompt. O backend valida mensagem, quantidades e duração, independentemente das instruções do modelo.
@@ -43,6 +43,11 @@ A interface usa `@SystemMessage`, `@MemoryId` e `@UserMessage`. As ferramentas s
 | `budgetJuice` | Calcular sucos com a taxa de 10% |
 | `sumTotalBudget` | Somar os valores já calculados, sem reaplicar taxas |
 
+## Arquitetura
+
+![Arquitetura do sistema: chat web, backend Spring Boot, assistente de IA, regras de negócio, H2 e OpenAI](docs/arquitetura-sistema.svg)
+
+
 ## Organização
 
 ```text
@@ -52,11 +57,12 @@ src/main/java/com/gstech/AssistantAi/
 ├── dto/             # Contratos da API e resultados das ferramentas
 ├── model/           # Entidades do catálogo e enums
 ├── repositories/    # Consultas JPA
-└── service/
+├── service/
     ├── MenuService.java               # Consulta e montagem dos cardápios
     ├── BudgetCalculationService.java  # Cálculos e validação do orçamento
-    ├── MenuToolsService.java          # Ferramentas de consulta para a IA
     └── BudgetToolService.java         # Ferramentas de cálculo para a IA
+└── tools/
+    └── MenuToolsService.java          # Ferramentas de consulta para a IA
 ```
 
 A interface está em `src/main/resources/static/index.html`. O arquivo `data.sql` popula o catálogo na inicialização.
@@ -103,7 +109,7 @@ OPENAI_API_KEY=
 OPENAI_MODEL=
 ```
 
-Preencha `OPENAI_API_KEY` com sua chave da OpenAI e `OPENAI_MODEL` com o identificador de um modelo com suporte a Chat Completions e function calling. A aplicação exige ambos preenchidos e não escolhe um modelo automaticamente. O token deve ser informado sem o prefixo `Bearer`; a integração adiciona esse cabeçalho. Consulte a [documentação oficial de autenticação](https://developers.openai.com/api/reference/overview) e de [chamadas de ferramentas](https://developers.openai.com/api/docs/guides/function-calling) para conferir a compatibilidade do modelo escolhido.
+Preencha `OPENAI_API_KEY` com sua chave da OpenAI e `OPENAI_MODEL` com o identificador de um modelo compatível com Chat Completions, function calling e `reasoning_effort=none`. A aplicação envia esse nível de raciocínio para permitir o uso de ferramentas com modelos como `gpt-6-luna`. A aplicação exige ambos preenchidos e não escolhe um modelo automaticamente. O token deve ser informado sem o prefixo `Bearer`; a integração adiciona esse cabeçalho. Consulte a [documentação oficial de autenticação](https://developers.openai.com/api/reference/overview) e de [chamadas de ferramentas](https://developers.openai.com/api/docs/guides/function-calling) para conferir a compatibilidade do modelo escolhido.
 
 O Spring carrega o `.env` como arquivo de propriedades a partir do diretório de execução. Use `NOME=valor`, sem `export` nem aspas envolvendo o valor. Variáveis de ambiente do processo também são aceitas. O `.env` é ignorado pelo Git; somente `.env.example` é versionado.
 
@@ -127,7 +133,7 @@ O console H2 está em `/h2-console`, com URL JDBC `jdbc:h2:mem:testdb`, usuário
 
 Os testes usam o perfil `test`, H2 e um modelo simulado. Não exigem `.env`, chave OpenAI ou chamadas reais à API. Na primeira execução, o Maven precisa de acesso à internet para baixar as dependências.
 
-A suíte cobre o cálculo infantil, horas extras, taxas, entradas inválidas, preços ausentes, dados iniciais do H2, contratos HTTP, erros do provedor, autenticação Bearer e continuidade de uma chamada de ferramenta simulada na OpenAI.
+A suíte cobre cálculo infantil, horas extras, taxas, entradas inválidas, preços ausentes, dados iniciais do H2, consulta de bebidas por categoria, ordenação dos itens do cardápio e uso dos preços armazenados no banco.
 
 Para gerar o pacote:
 
