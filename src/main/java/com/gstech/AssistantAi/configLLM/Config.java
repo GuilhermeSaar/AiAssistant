@@ -58,22 +58,4 @@ public class Config {
                 .build();
     }
 
-
-//    @Value("${google-ai-gemini.chat-model.api-key}")
-//    private String apiKey;
-//    @Value("${google-ai-gemini.chat-model.model-name}")
-//    private String modelName;
-//
-//
-//    @Bean
-//    public GoogleAiGeminiChatModel getGeminiModel() {
-//
-//        return GoogleAiGeminiChatModel.builder()
-//                .allowGoogleSearch(false)
-//                .modelName(modelName)
-//                .temperature(0.0)
-//                .returnThinking(false)
-//                .apiKey(apiKey)
-//                .build();
-//    }
 }

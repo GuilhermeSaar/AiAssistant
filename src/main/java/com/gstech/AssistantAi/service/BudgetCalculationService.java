@@ -2,69 +2,79 @@ package com.gstech.AssistantAi.service;
 
 import com.gstech.AssistantAi.dto.BBQOption;
 import com.gstech.AssistantAi.dto.DrinkOption;
+import com.gstech.AssistantAi.model.BbqMenuDefinition;
+import com.gstech.AssistantAi.model.BbqMenuItem;
+import com.gstech.AssistantAi.model.Drink;
 import com.gstech.AssistantAi.model.enums.BBQ;
 import com.gstech.AssistantAi.model.enums.NameDrink;
+import com.gstech.AssistantAi.repositories.BbqMenuRepository;
 import com.gstech.AssistantAi.repositories.DrinkRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class BudgetCalculationService {
 
-    private final DrinkRepository repository;
+    private final DrinkRepository drinkRepository;
+    private final BbqMenuRepository bbqMenuRepository;
 
-    public BudgetCalculationService(DrinkRepository repository) {
-        this.repository = repository;
+    public BudgetCalculationService(DrinkRepository drinkRepository, BbqMenuRepository bbqMenuRepository) {
+        this.drinkRepository = drinkRepository;
+        this.bbqMenuRepository = bbqMenuRepository;
     }
 
     public DrinkOption getBeerMenu() {
-
-        return new DrinkOption(
-                "CERVEJAS 600ML",
-                Map.of(
-                        NameDrink.SKOL, repository.findPriceByNameDrink(NameDrink.SKOL),
-                        NameDrink.BRAHMA, repository.findPriceByNameDrink(NameDrink.BRAHMA),
-                        NameDrink.HEINEKEN, repository.findPriceByNameDrink(NameDrink.HEINEKEN)
-                )
-        );
+        return getDrinkMenu("Cerveja", "CERVEJAS 600ML");
     }
 
     public DrinkOption getJuiceMenu() {
-
-        return new DrinkOption(
-                "SUCOS 1L",
-                Map.of(
-                        NameDrink.LARANJA, repository.findPriceByNameDrink(NameDrink.LARANJA),
-                        NameDrink.MARACUJA, repository.findPriceByNameDrink(NameDrink.MARACUJA),
-                        NameDrink.ABACAXI, repository.findPriceByNameDrink(NameDrink.ABACAXI)
-                )
-        );
+        return getDrinkMenu("Suco", "SUCOS 1L");
     }
 
     public BBQOption getBbqEssencialMenu() {
-
-        return new BBQOption(
-                "CHURRASCO ESSENCIAL",
-                List.of("Picanha", "Contra-filé"),
-                List.of("Linguiça toscana"),
-                List.of("Coração de frango", "Coxa e sobrecoxa"),
-                List.of("Arroz branco", "Farofa", "Vinagrete", "Maionese", "Pão de alho")
-        );
+        return getBbqMenu(BBQ.CHURRASCO_ESSENCIAL);
     }
 
     public BBQOption getBbqPremiumMenu() {
+        return getBbqMenu(BBQ.CHURRASCO_PREMIUM);
+    }
+
+    private DrinkOption getDrinkMenu(String category, String title) {
+        Map<NameDrink, BigDecimal> drinks = drinkRepository.findByCategory_CategoryNameIgnoreCase(category)
+                .stream()
+                .collect(Collectors.toMap(
+                        Drink::getNameDrink,
+                        Drink::getPrice,
+                        (first, duplicate) -> first,
+                        () -> new EnumMap<>(NameDrink.class)
+                ));
+        return new DrinkOption(title, drinks);
+    }
+
+    private BBQOption getBbqMenu(BBQ type) {
+        BbqMenuDefinition menu = bbqMenuRepository.findByType(type)
+                .orElseThrow(() -> new IllegalStateException("Cardápio não cadastrado no banco: " + type));
 
         return new BBQOption(
-                "CHURRASCO PREMIUM",
-                List.of("Picanha Angus", "Ancho", "Chorizo"),
-                List.of("Costela suína", "Linguiça defumada"),
-                List.of("Medalhão de frango com bacon", "Asinhas de frango"),
-                List.of("Queijo coaclho", "Pão de alho especial", "Arroz branco", "Farofa especial", "Salada verde")
+                menu.getTitle(),
+                itemsForSection(menu.getItems(), "beef"),
+                itemsForSection(menu.getItems(), "pork"),
+                itemsForSection(menu.getItems(), "chicken"),
+                itemsForSection(menu.getItems(), "side")
         );
+    }
+
+    private List<String> itemsForSection(List<BbqMenuItem> items, String section) {
+        return items.stream()
+                .filter(item -> section.equals(item.getSection()))
+                .map(BbqMenuItem::getItemName)
+                .toList();
     }
 
      //taxa de hora extra para eventos com duracao maior que 4 horas
@@ -81,20 +91,14 @@ public class BudgetCalculationService {
     public BigDecimal calculateBBQ(BBQ type, int adults, int childrenUnder12, int eventDurationHours) {
 
         BigDecimal operationalCost = BigDecimal.valueOf(1.15);
-        BigDecimal totalCostBBQ = BigDecimal.ZERO;
         BigDecimal sumGuests = BigDecimal.valueOf(adults).add(BigDecimal.valueOf(childrenUnder12).multiply(BigDecimal.valueOf(0.50)));
 
         int roundedGuests = (int) Math.ceil(sumGuests.doubleValue());
-
-        if (BBQ.CHURRASCO_PREMIUM == type) {
-            totalCostBBQ = BigDecimal.valueOf(79.90).multiply(BigDecimal.valueOf(roundedGuests))
-                    .multiply(BigDecimal.valueOf(hourlyRate(eventDurationHours)));
-        }
-
-        else if (BBQ.CHURRASCO_ESSENCIAL == type) {
-            totalCostBBQ = BigDecimal.valueOf(59.90).multiply(BigDecimal.valueOf(roundedGuests))
-                    .multiply(BigDecimal.valueOf(hourlyRate(eventDurationHours)));
-        }
+        BigDecimal basePrice = bbqMenuRepository.findByType(type)
+                .orElseThrow(() -> new IllegalStateException("Preço não cadastrado no banco para o cardápio: " + type))
+                .getBasePrice();
+        BigDecimal totalCostBBQ = basePrice.multiply(BigDecimal.valueOf(roundedGuests))
+                .multiply(BigDecimal.valueOf(hourlyRate(eventDurationHours)));
 
         return totalCostBBQ.multiply(operationalCost).setScale(2, RoundingMode.HALF_UP);
     }
@@ -105,11 +109,11 @@ public class BudgetCalculationService {
         BigDecimal taxBeer = BigDecimal.valueOf(1.25);
 
         BigDecimal totalCost = BigDecimal.valueOf(quantityBrahma600ml)
-                .multiply(repository.findPriceByNameDrink(NameDrink.BRAHMA))
+                .multiply(drinkRepository.findPriceByNameDrink(NameDrink.BRAHMA))
                 .add(BigDecimal.valueOf(quantityHeineken600ml)
-                .multiply(repository.findPriceByNameDrink(NameDrink.HEINEKEN)))
+                .multiply(drinkRepository.findPriceByNameDrink(NameDrink.HEINEKEN)))
                 .add(BigDecimal.valueOf(quantitySkol600ml)
-                .multiply(repository.findPriceByNameDrink(NameDrink.SKOL)));
+                .multiply(drinkRepository.findPriceByNameDrink(NameDrink.SKOL)));
 
         return totalCost.multiply(taxBeer).setScale(2, RoundingMode.HALF_UP);
     }
@@ -120,11 +124,11 @@ public class BudgetCalculationService {
         BigDecimal taxJuice = BigDecimal.valueOf(1.10);
 
         BigDecimal totalCost = BigDecimal.valueOf(quantityLaranja)
-                .multiply(repository.findPriceByNameDrink(NameDrink.LARANJA))
+                .multiply(drinkRepository.findPriceByNameDrink(NameDrink.LARANJA))
                 .add(BigDecimal.valueOf(quantityMaracuja)
-                .multiply(repository.findPriceByNameDrink(NameDrink.MARACUJA)))
+                .multiply(drinkRepository.findPriceByNameDrink(NameDrink.MARACUJA)))
                 .add(BigDecimal.valueOf(quantityAbacaxi)
-                .multiply(repository.findPriceByNameDrink(NameDrink.ABACAXI)));
+                .multiply(drinkRepository.findPriceByNameDrink(NameDrink.ABACAXI)));
 
         return totalCost.multiply(taxJuice).setScale(2, RoundingMode.HALF_UP);
     }

@@ -212,7 +212,7 @@ ollama run gpt-oss:20b
 A aplicação estará disponível em: `http://localhost:8080`
 A interface de chat pode ser acessada em: `http://localhost:8080/index.html`
 
-> O banco H2 é populado automaticamente com preços de bebidas via `data.sql` na inicialização.
+> O banco H2 é populado automaticamente via `data.sql` na inicialização com bebidas, cardápios de churrasco e preços base. Os serviços consultam esses dados no banco.
 
 ---
 
