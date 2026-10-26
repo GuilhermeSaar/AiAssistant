@@ -63,15 +63,6 @@
     }
     .header-info h1 { font-size: 17px; font-weight: 700; }
     .header-info p  { font-size: 13px; color: var(--muted); }
-    .status-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #22c55e;
-      display: inline-block;
-      margin-right: 5px;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
     /* ── messages ── */
     #messages {
       flex: 1;
@@ -235,7 +226,8 @@
     .welcome h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
     .welcome p { color: var(--muted); font-size: 14px; line-height: 1.6; }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -244,12 +236,12 @@
     <div class="logo">🥩</div>
     <div class="header-info">
       <h1>Brasa's Assistente Virtual</h1>
-      <p><span class="status-dot"></span>Online — Churrascaria Brasa's</p>
+      <p>Atendimento virtual — Churrascaria Brasa's</p>
     </div>
   </header>
 
   <!-- Messages -->
-  <div id="messages">
+  <div id="messages" role="log" aria-live="polite">
     <div class="welcome" id="welcome">
       <div class="fire">🔥</div>
       <h2>Bem-vindo ao Assistente da Brasa's!</h2>
@@ -265,10 +257,12 @@
       <textarea
         id="userInput"
         placeholder="Digite sua mensagem…"
+        aria-label="Mensagem para o assistente"
+        maxlength="4000"
         rows="1"
         autofocus
       ></textarea>
-      <button id="sendBtn" title="Enviar (Enter)">➤</button>
+      <button id="sendBtn" title="Enviar (Enter)" aria-label="Enviar mensagem">➤</button>
     </div>
     <p class="hint">Pressione <kbd>Enter</kbd> para enviar · <kbd>Shift+Enter</kbd> para nova linha</p>
   </div>
@@ -318,8 +312,16 @@
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
     
-    if (role === 'bot' && typeof marked !== 'undefined') {
-      bubble.innerHTML = marked.parse(text);
+    if (role === 'bot' && typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+      const content = DOMPurify.sanitize(marked.parse(text), {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'del', 'ul', 'ol', 'li', 'blockquote',
+          'pre', 'code', 'h1', 'h2', 'h3', 'h4', 'hr', 'table', 'thead', 'tbody',
+          'tr', 'th', 'td', 'a'],
+        ALLOWED_ATTR: ['href', 'title'],
+        ALLOW_DATA_ATTR: false,
+        RETURN_DOM_FRAGMENT: true
+      });
+      bubble.appendChild(content);
     } else {
       bubble.textContent = text;
     }
@@ -370,32 +372,47 @@
     inputEl.style.height = 'auto';
     showTyping();
 
+    const requestController = new AbortController();
+    const requestTimeout = setTimeout(() => requestController.abort(), 180000);
+
     try {
-      const body = { UserMessage: text };
+      const body = { userMessage: text };
       if (conversationId) body.id = conversationId;
 
-      const API_URL = window.location.port === '8080'
-        ? '/api/chat'
-        : 'http://localhost:8080/api/chat';
-
-      const res = await fetch(API_URL, {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: requestController.signal
       });
 
-      if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        const statusMessages = {
+          400: 'Confira a mensagem enviada e tente novamente.',
+          429: 'O limite de uso do assistente foi atingido. Tente novamente mais tarde.',
+          503: 'O serviço de IA está temporariamente indisponível. Tente novamente em instantes.',
+          504: 'O assistente demorou para responder. Tente novamente em instantes.'
+        };
+        throw new Error(data?.message || statusMessages[res.status] || 'Não foi possível concluir sua solicitação.');
+      }
+      if (!data || typeof data.outputLLM !== 'string' || typeof data.id !== 'string') {
+        throw new Error('O servidor enviou uma resposta inválida. Tente novamente.');
+      }
 
-      const data = await res.json();
       conversationId = data.id;
-
-      hideTyping();
       appendMessage('bot', data.outputLLM);
     } catch (err) {
-      hideTyping();
-      appendMessage('bot', '⚠️ Ops! Não consegui conectar com o servidor. Verifique se a aplicação está rodando.');
+      const message = err.name === 'AbortError'
+        ? 'O assistente demorou para responder. Tente novamente em instantes.'
+        : err instanceof TypeError
+          ? 'Não foi possível conectar ao servidor. Confira sua conexão e tente novamente.'
+          : err.message;
+      appendMessage('bot', `⚠️ ${message}`);
       console.error(err);
     } finally {
+      clearTimeout(requestTimeout);
+      hideTyping();
       waiting = false;
       sendBtn.disabled = false;
       inputEl.focus();

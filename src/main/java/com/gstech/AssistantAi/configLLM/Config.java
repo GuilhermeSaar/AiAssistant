@@ -2,51 +2,49 @@ package com.gstech.AssistantAi.configLLM;
 
 import com.gstech.AssistantAi.configLLM.interfaces.AiAssistantService;
 import com.gstech.AssistantAi.service.BudgetToolService;
-import com.gstech.AssistantAi.service.MenuToolsService;
+import com.gstech.AssistantAi.tools.MenuToolsService;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.chat.ChatModel;
-import dev.langchain4j.model.googleai.GoogleAiGeminiChatModel;
-import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.service.AiServices;
-import dev.langchain4j.store.memory.chat.ChatMemoryStore;
-import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.time.Duration;
-
 @Configuration
 public class Config {
 
+    private final String openAiApiKey;
+    private final String openAiModelName;
 
-    // parametros de config do modelo LLM
-    @Value("${ollama-ai.chat-model.base.url}")
-    private String baseUrl;
-    @Value("${ollama-ai.chat-model.model-name}")
-    private String modelName;
+    public Config(@Value("${OPENAI_API_KEY:}") String openAiApiKey,
+                  @Value("${OPENAI_MODEL:}") String openAiModelName) {
+        this.openAiApiKey = openAiApiKey;
+        this.openAiModelName = openAiModelName;
+    }
 
-     //modelo de LLM
     @Bean
-    public ChatModel ollamaModel() {
+    public ChatModel chatModel() {
+        if (openAiApiKey.isBlank()) {
+            throw new IllegalStateException("Defina OPENAI_API_KEY no arquivo .env para usar a OpenAI.");
+        }
+        if (openAiModelName.isBlank()) {
+            throw new IllegalStateException("Defina OPENAI_MODEL no arquivo .env para usar a OpenAI.");
+        }
 
-        return OllamaChatModel.builder()
-                .baseUrl(baseUrl)
-                .modelName(modelName)
-                .timeout(Duration.ofSeconds(120))
-                .temperature(0.0)
+        return OpenAiChatModel.builder()
+                .apiKey(openAiApiKey)
+                .modelName(openAiModelName)
+                .reasoningEffort("none")
                 .build();
     }
 
-    // armazenamento de memoria.
     @Bean
     public ChatMemoryProvider chatMemoryProvider() {
         return memoryId -> MessageWindowChatMemory.withMaxMessages(30);
     }
 
-    // Configuração do serviço
     @Bean
     public AiAssistantService assistantService(ChatMemoryProvider memory, ChatModel model,
                                                MenuToolsService menuTools, BudgetToolService budgetTools) {
@@ -57,5 +55,4 @@ public class Config {
                 .tools(menuTools, budgetTools)
                 .build();
     }
-
 }

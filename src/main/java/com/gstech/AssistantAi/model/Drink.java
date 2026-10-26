@@ -19,15 +19,15 @@ public class Drink {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome")
+    @Column(name = "nome", nullable = false, unique = true)
     @Enumerated(EnumType.STRING)
     private NameDrink nameDrink;
-    @Column(name = "preco")
+    @Column(name = "preco", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
     @Column(name = "descricao")
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "categoria_id")
+    @JoinColumn(name = "categoria_id", nullable = false)
     private CategoryDrink category;
 }

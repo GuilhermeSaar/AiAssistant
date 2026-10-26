@@ -34,3 +34,8 @@ build/
 
 ### properties ###
 application-dev.properties
+
+### environment variables ###
+.env
+.env.*
+!.env.example

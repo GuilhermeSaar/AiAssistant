@@ -1,5 +1,6 @@
 package com.gstech.AssistantAi.model;
 
+import com.gstech.AssistantAi.model.enums.BbqMenuSection;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,8 +21,9 @@ public class BbqMenuItem {
     @JoinColumn(name = "cardapio_tipo", referencedColumnName = "tipo", nullable = false)
     private BbqMenuDefinition menu;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "secao", nullable = false)
-    private String section;
+    private BbqMenuSection section;
 
     @Column(name = "nome_item", nullable = false)
     private String itemName;

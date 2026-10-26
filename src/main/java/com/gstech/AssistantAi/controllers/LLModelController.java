@@ -3,7 +3,7 @@ package com.gstech.AssistantAi.controllers;
 import com.gstech.AssistantAi.configLLM.interfaces.AiAssistantService;
 import com.gstech.AssistantAi.dto.RequestDTO;
 import com.gstech.AssistantAi.dto.ResponseLLMDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,21 +16,24 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class LLModelController {
 
-    @Autowired
-    private AiAssistantService assistant;
+    private final AiAssistantService assistant;
 
+    public LLModelController(AiAssistantService assistant) {
+        this.assistant = assistant;
+    }
 
     @PostMapping("/chat")
-    public ResponseEntity<ResponseLLMDTO> getResponse(@RequestBody RequestDTO message) {
+    public ResponseEntity<ResponseLLMDTO> getResponse(@Valid @RequestBody RequestDTO message) {
 
         String conversationId = message.id();
 
         if (conversationId == null || conversationId.isBlank()) {
             conversationId = UUID.randomUUID().toString();
+        } else {
+            conversationId = conversationId.trim();
         }
 
-
-        String response = assistant.message(conversationId, message.UserMessage());
+        String response = assistant.message(conversationId, message.userMessage().trim());
         return ResponseEntity.ok(new ResponseLLMDTO(response, conversationId));
     }
 }

@@ -1,221 +1,181 @@
-# 🥩 Brasa's Churrascaria — Assistente Virtual de IA
+# Brasa's Churrascaria — Assistente Virtual
 
-> Assistente virtual inteligente para atendimento e geração de orçamentos de eventos de churrasco, desenvolvido com **Spring Boot** e **LangChain4j**.
+Projeto de portfólio em Java que integra a API da OpenAI a ferramentas de consulta de cardápios e cálculo de orçamentos. O modelo conduz a conversa; os preços vêm do H2 e os cálculos são feitos no backend com `BigDecimal`.
 
----
+## Tecnologias
 
-## 📌 Sobre o Projeto
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| Java | 21 | Backend |
+| Spring Boot | 3.5.11 | API REST, validação e injeção de dependências |
+| Spring Data JPA e H2 | Gerenciadas pelo Spring Boot | Catálogo em banco de dados em memória |
+| LangChain4j e integração OpenAI | 1.11.0 | Conversação e chamadas de ferramentas |
+| Lombok | Gerenciada pelo Spring Boot | Acessores das entidades |
+| Marked / DOMPurify | 18.0.14 / 3.4.16 | Renderização e sanitização do Markdown no chat |
 
-O **AssistantAi** é o assistente virtual da **Brasa's Churrascaria**. Ele conduz o cliente por todo o processo de atendimento — do primeiro contato até a apresentação de um orçamento detalhado — de forma conversacional, guiada e totalmente automatizada.
+## Como funciona
 
-O principal objetivo técnico do projeto foi explorar na prática as funcionalidades de **`@AiService`** e **`@Tool`** do [LangChain4j](https://docs.langchain4j.dev/), integrando um LLM com ferramentas reais de negócio de forma declarativa e eficiente.
+1. O cliente informa o tipo de churrasco, os convidados e a duração.
+2. O assistente consulta os cardápios e solicita as informações que faltam.
+3. Após a confirmação, as ferramentas Java calculam o churrasco e as bebidas escolhidas.
+4. O assistente apresenta os valores retornados pelas ferramentas e o total.
 
----
+O fluxo conversacional é orientado pelo prompt. O backend valida mensagem, quantidades e duração, independentemente das instruções do modelo.
 
-## 🧠 Destaques Técnicos — `@AiService` e `@Tool`
-
-### `@AiService`
-
-O `@AiService` é uma das funcionalidades mais poderosas do LangChain4j. Com ele, é possível criar um agente de IA completo apenas declarando uma **interface Java** — sem implementação manual:
-
-```java
-@AiService
-public interface AiAssistantService extends ChatMemoryAccess {
-
-    @SystemMessage("""
-        Você é o assistente virtual da Brasa's Churrascaria...
-    """)
-    String message(@MemoryId String conversationId,
-                   @UserMessage String message);
-}
-```
-
-O LangChain4j injeta automaticamente:
-- O modelo de linguagem configurado (`ChatModel`)
-- O provedor de memória (`ChatMemoryProvider`)
-- As ferramentas (`@Tool`) disponíveis no contexto Spring
-
-### `@Tool`
-
-As ferramentas são **métodos Java anotados com `@Tool`** que o LLM pode invocar autonomamente quando precisar de informações ou cálculos reais. O modelo decide, com base na descrição, quando e como usar cada ferramenta:
+O assistente é registrado manualmente em um bean Spring com `AiServices.builder()`:
 
 ```java
-@Tool("""
-    Calcula o valor do churrasco. Use APENAS após ter: Tipo de churrasco, Adultos, Crianças e Duração.
-""")
-public BigDecimal budgetBBQ(BBQ bbqType, int adults, int childrenUnder12, int eventDurationHours) {
-    return service.calculateBBQ(bbqType, adults, childrenUnder12, eventDurationHours);
-}
+return AiServices.builder(AiAssistantService.class)
+        .chatModel(model)
+        .chatMemoryProvider(memory)
+        .tools(menuTools, budgetTools)
+        .build();
 ```
 
-**Ferramentas implementadas:**
+A interface usa `@SystemMessage`, `@MemoryId` e `@UserMessage`. As ferramentas são métodos anotados com `@Tool`. O projeto utiliza essa configuração explícita, sem o starter de autoconfiguração do LangChain4j.
 
-| Tool | Descrição |
-|------|-----------|
-| `budgetBBQ` | Calcula o custo do churrasco (Premium ou Essencial) por tipo, convidados e duração |
-| `budgetBeer` | Calcula o custo de cervejas (Brahma, Heineken, Skol 600ml) |
-| `budgetJuice` | Calcula o custo de sucos naturais (Laranja, Abacaxi, Maracujá 1L) |
-| `sumTotalBudget` | Soma todos os valores e retorna o total final do orçamento |
-| `menuDrinks` | Retorna o cardápio de bebidas disponíveis |
-| `bbqMenu` | Retorna o cardápio completo (Premium e Essencial) da churrascaria |
+| Ferramenta | Responsabilidade |
+|---|---|
+| `menuDrinks` | Consultar cervejas e sucos por categoria no H2 |
+| `bbqMenu` | Consultar os itens dos cardápios Premium e Essencial |
+| `budgetBBQ` | Calcular churrasco, desconto infantil, horas extras e custo operacional |
+| `budgetBeer` | Calcular cervejas com a taxa de 25% |
+| `budgetJuice` | Calcular sucos com a taxa de 10% |
+| `sumTotalBudget` | Somar os valores já calculados, sem reaplicar taxas |
 
----
+## Organização
 
-## ✨ Funcionalidades
-
-- 🤝 **Atendimento conversacional guiado** — Uma pergunta por vez, sem sobrecarregar o cliente
-- 🗂️ **Qualificação de evento** — Coleta tipo de evento, número de adultos, crianças e duração
-- 🥩 **Cardápio interativo** — Apresenta os menus Premium e Essencial sob demanda
-- 🍺 **Orçamento de bebidas** — Cervejas (Brahma, Heineken, Skol 600ml) e Sucos (Laranja, Abacaxi, Maracujá 1L)
-- 🧠 **Memória de conversa por sessão** — Janela de 30 mensagens via `ChatMemoryProvider`
-- 🆔 **Sessões independentes** — Cada conversa possui um `conversationId` único (UUID)
-- 🌐 **Interface Web** — Página interativa em `index.html` para conversar com o assistente em tempo real
-
----
-
-## 🍽️ Cardápios
-
-### Churrasco Premium
-| Categoria | Itens |
-|-----------|-------|
-| Bovinos Nobres | Picanha Angus, Ancho, Chorizo |
-| Suínos | Costela suína |
-| Aves | Medalhão de frango com bacon |
-| Entradas | Queijo coalho, Pão de alho especial |
-| Acompanhamentos | Arroz branco, Arroz biro-biro, Farofa especial, Salada verde |
-
-### Churrasco Essencial
-| Categoria | Itens |
-|-----------|-------|
-| Bovinos | Picanha, Contra-filé |
-| Suínos | Linguiça toscana |
-| Aves | Coração de frango, Coxa e sobrecoxa |
-| Acompanhamentos | Arroz branco, Farofa, Vinagrete, Maionese, Pão de alho |
-
----
-
-## 💲 Regras de Negócio
-
-| Regra | Detalhe |
-|-------|---------|
-| Preço base — Essencial | R$ 59,90 / adulto |
-| Preço base — Premium | R$ 79,90 / adulto |
-| Crianças (< 12 anos) | 50% do valor do adulto |
-| Hora extra (> 4h) | +10% por hora extra sobre o custo do churrasco |
-| Custo operacional | +15% sobre o custo do churrasco |
-| Cerveja (sem qtd informada) | 1,5L por adulto, distribuído entre as marcas escolhidas |
-
----
-
-
-
----
-
-## 🔌 API REST
-
-### `POST /api/chat`
-
-**Request:**
-```json
-{
-  "id": "uuid-da-sessao-ou-vazio",
-  "UserMessage": "Olá, gostaria de um orçamento para 30 pessoas"
-}
+```text
+src/main/java/com/gstech/AssistantAi/
+├── configLLM/       # Modelo OpenAI, memória e registro do assistente
+├── controllers/     # Endpoint de chat e tratamento de erros
+├── dto/             # Contratos da API e resultados das ferramentas
+├── model/           # Entidades do catálogo e enums
+├── repositories/    # Consultas JPA
+└── service/
+    ├── MenuService.java               # Consulta e montagem dos cardápios
+    ├── BudgetCalculationService.java  # Cálculos e validação do orçamento
+    ├── MenuToolsService.java          # Ferramentas de consulta para a IA
+    └── BudgetToolService.java         # Ferramentas de cálculo para a IA
 ```
 
-> Se `id` for `null` ou vazio, um novo UUID de sessão é gerado automaticamente.
+A interface está em `src/main/resources/static/index.html`. O arquivo `data.sql` popula o catálogo na inicialização.
 
-**Response:**
-```json
-{
-  "response": "Olá! Seja bem-vindo à Brasa's Churrascaria! 🔥 ...",
-  "conversationId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-}
-```
+## Cardápios e regras de negócio
 
----
+| Categoria | Essencial | Premium |
+|---|---|---|
+| Bovinos | Picanha, Contra-filé | Picanha Angus, Ancho, Chorizo |
+| Suínos | Linguiça toscana | Costela suína, Linguiça defumada |
+| Aves | Coração de frango, Coxa e sobrecoxa | Medalhão de frango com bacon, Asinhas de frango |
+| Entradas e acompanhamentos | Arroz branco, Farofa, Vinagrete, Maionese, Pão de alho | Queijo coalho, Pão de alho especial, Arroz branco, Farofa especial, Salada verde |
 
-## ⚙️ Fluxo de Atendimento
+| Regra | Valor |
+|---|---|
+| Essencial | R$ 59,90 por adulto |
+| Premium | R$ 79,90 por adulto |
+| Criança menor de 12 anos | 50% do preço de um adulto, sem arredondar o número de convidados |
+| Hora extra após 4 horas | Acréscimo de 10% por hora sobre o churrasco |
+| Custo operacional | Acréscimo de 15% sobre o churrasco |
+| Brahma / Skol, 600 ml | R$ 9,00 por garrafa, antes da taxa |
+| Heineken, 600 ml | R$ 12,00 por garrafa, antes da taxa |
+| Sucos de laranja, maracujá e abacaxi | R$ 8,00 por litro, antes da taxa |
+| Taxa de cervejas / sucos | 25% / 10% |
 
-O assistente segue obrigatoriamente 5 etapas definidas no `@SystemMessage`:
+As quantidades das bebidas são informadas pelo cliente. Marcas ou sabores não escolhidos recebem quantidade zero. Quantidades negativas, duração menor que uma hora e eventos sem convidados são rejeitados.
 
-```
-1. ACOLHIMENTO        → Cumprimenta e identifica a necessidade do cliente
-2. QUALIFICAÇÃO       → Coleta: tipo de evento, adultos, crianças, duração, data
-3. ESCOLHA DO MENU    → Apresenta Premium ou Essencial conforme interesse
-4. BEBIDAS            → Oferece cervejas e sucos; aceita qtd. ou usa sugestão automática
-5. ORÇAMENTO FINAL    → Calcula via @Tool e apresenta o resumo formatado com totais
-```
+Exemplo: 1 adulto e 1 criança no Essencial, durante 4 horas, custam `59,90 × 1,5 × 1,15 = R$ 103,33`. O arredondamento monetário ocorre no final, com duas casas decimais e `HALF_UP`.
 
----
+## Executar
 
-## 🤖 Configuração do Modelo
+É necessário Java 21 e uma chave da API da OpenAI com acesso ao modelo escolhido. O Maven Wrapper baixa a versão do Maven usada pelo projeto.
 
-O projeto suporta dois provedores:
-
-| Provedor | Status | Observação |
-|----------|--------|------------|
-| **Ollama** (gpt-oss:20b) | ✅ Ativo | Via API compatível com OpenAI — `http://localhost:11434/v1` |
-| **Google Gemini** (gemini-2.5-flash) | 💤 Comentado | Descomente o bean em `ConfigChatModel.java` para ativar |
-
----
-
-## 🛠️ Tecnologias
-
-| Tecnologia | Versão | Finalidade |
-|------------|--------|------------|
-| Java | 21 | Linguagem principal |
-| Spring Boot | 3.5.11 | Framework backend |
-| Spring Data JPA | — | Persistência de dados |
-| H2 Database | — | Banco de dados em memória com seed via `data.sql` |
-| **LangChain4j Spring Boot Starter** | **1.0.0-beta19** | **`@AiService`, `@Tool`, `ChatMemoryProvider`** |
-| LangChain4j Google Gemini | 1.11.0 | Suporte ao modelo Gemini |
-| LangChain4j OpenAI | 1.11.0 | Compatível com Ollama |
-| Lombok | — | Redução de boilerplate |
-
----
-
-## 🚀 Como Executar
-
-### Pré-requisitos
-
-- Java 21+
-- Maven 3.8+
-- [Ollama](https://ollama.com/) instalado localmente com o modelo `gpt-oss:20b` (ou outro de sua preferência)
-
-### 1. Clone o repositório
+Na primeira execução, crie o arquivo de configuração na raiz:
 
 ```bash
-git clone https://github.com/GuilhermeSaar/AiAssistant.git
-cd AiAssistant
+cp .env.example .env
 ```
 
-### 2. Configure as propriedades
+Se o `.env` já existir, edite-o diretamente para preservar sua chave. Preencha as duas variáveis:
 
-```properties
-ollama-ai.chat-model.base.url=http://localhost:11434
-ollama-ai.chat-model.model-name=gpt-oss:20b
+```dotenv
+OPENAI_API_KEY=
+OPENAI_MODEL=
 ```
 
-### 3. Suba o Ollama com o modelo
+Preencha `OPENAI_API_KEY` com sua chave da OpenAI e `OPENAI_MODEL` com o identificador de um modelo com suporte a Chat Completions e function calling. A aplicação exige ambos preenchidos e não escolhe um modelo automaticamente. O token deve ser informado sem o prefixo `Bearer`; a integração adiciona esse cabeçalho. Consulte a [documentação oficial de autenticação](https://developers.openai.com/api/reference/overview) e de [chamadas de ferramentas](https://developers.openai.com/api/docs/guides/function-calling) para conferir a compatibilidade do modelo escolhido.
 
-```bash
-ollama run gpt-oss:20b
-```
+O Spring carrega o `.env` como arquivo de propriedades a partir do diretório de execução. Use `NOME=valor`, sem `export` nem aspas envolvendo o valor. Variáveis de ambiente do processo também são aceitas. O `.env` é ignorado pelo Git; somente `.env.example` é versionado.
 
-### 4. Execute a aplicação
+Inicie a aplicação a partir da raiz do projeto:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-A aplicação estará disponível em: `http://localhost:8080`
-A interface de chat pode ser acessada em: `http://localhost:8080/index.html`
+No Windows, use `mvnw.cmd spring-boot:run`.
 
-> O banco H2 é populado automaticamente via `data.sql` na inicialização com bebidas, cardápios de churrasco e preços base. Os serviços consultam esses dados no banco.
+Abra [http://localhost:8080](http://localhost:8080). A interface chama `/api/chat` no mesmo domínio e também funciona quando a aplicação é hospedada em outra porta ou domínio.
 
----
+O console H2 está em `/h2-console`, com URL JDBC `jdbc:h2:mem:testdb`, usuário `sa` e senha vazia.
 
-## 📝 Licença
+## Testes
 
-Projeto desenvolvido para fins didáticos e de demonstração. Sinta-se à vontade para explorar.
+```bash
+./mvnw test
+```
+
+Os testes usam o perfil `test`, H2 e um modelo simulado. Não exigem `.env`, chave OpenAI ou chamadas reais à API. Na primeira execução, o Maven precisa de acesso à internet para baixar as dependências.
+
+A suíte cobre o cálculo infantil, horas extras, taxas, entradas inválidas, preços ausentes, dados iniciais do H2, contratos HTTP, erros do provedor, autenticação Bearer e continuidade de uma chamada de ferramenta simulada na OpenAI.
+
+Para gerar o pacote:
+
+```bash
+./mvnw package
+```
+
+## API
+
+### `POST /api/chat`
+
+```json
+{
+  "userMessage": "Gostaria de um orçamento para 10 adultos e 2 crianças",
+  "id": null
+}
+```
+
+`userMessage` é obrigatório e aceita até 4000 caracteres. O nome antigo `UserMessage` continua aceito para compatibilidade. O `id` é opcional e aceita até 64 caracteres; quando ausente ou vazio, um UUID é gerado. Nas próximas mensagens, envie o `id` retornado para continuar a conversa.
+
+Resposta:
+
+```json
+{
+  "outputLLM": "Olá! Você prefere o churrasco Premium ou Essencial?",
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+```
+
+Erros retornam um status HTTP e uma mensagem destinada ao usuário:
+
+```json
+{
+  "message": "O serviço de IA está temporariamente indisponível. Tente novamente em instantes."
+}
+```
+
+| Status | Situação |
+|---|---|
+| 400 | Mensagem ou JSON inválido |
+| 429 | Limite de uso do provedor atingido |
+| 503 | Provedor ou modelo indisponível |
+| 504 | Tempo de resposta do provedor excedido |
+| 500 | Falha inesperada |
+
+## Limites da demonstração
+
+- O H2 é recriado com os dados iniciais quando a aplicação inicia. Orçamentos não são salvos.
+- O histórico de conversa fica na memória da aplicação, com até 30 mensagens por conversa. Reiniciar a aplicação apaga esse histórico.
+- A API da OpenAI é um serviço externo e pode apresentar indisponibilidade ou limites de uso. A API e a interface apresentam essas falhas ao usuário.
+- O chat sanitiza o HTML gerado pelo Markdown. Se as bibliotecas do CDN não estiverem disponíveis, a resposta aparece como texto.
